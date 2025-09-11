@@ -72,6 +72,12 @@ export class Users extends Model {
 	@Column({ defaultValue: DataType.NOW })
 	updatedAt: Date; // Время последнего обновления записи
 
+	@Column({ allowNull: true })
+	emailVerificationToken: string; // токен для подтверждения email
+
+	@Column({ allowNull: true })
+	emailVerificationExpiresAt: Date; // время истечения токена
+
 	// Связь с refresh токенами (один пользователь - много токенов)
 	@HasMany(() => RefreshToken, { foreignKey: 'userId', as: 'refreshTokens' })
 	refreshTokens: RefreshToken[];

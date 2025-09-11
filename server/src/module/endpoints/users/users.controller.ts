@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 
 import { ApiTags } from '@nestjs/swagger';
@@ -14,5 +14,11 @@ export class UsersController {
 	@CreateUserDoc()
 	async createUser(@Body() dto: CreateUserDto): Promise<Users> {
 		return this.userService.createUser(dto);
+	}
+
+	@Get('verify-email')
+	async verifyEmail(@Query('token') token: string) {
+		await this.userService.confirmEmail(token);
+		return { message: 'Email успешно подтверждён' };
 	}
 }
