@@ -4,8 +4,9 @@ import { SequelizeModule } from '@nestjs/sequelize';
 
 // Импортируем модели
 import { Users } from './models/users.repository';
+import { RefreshToken } from './models/refresh-token.repository';
 
-const dbList = [Users];
+const dbList = [Users, RefreshToken];
 
 @Module({
 	imports: [

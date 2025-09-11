@@ -17,7 +17,7 @@ http {
         client_max_body_size 100M;
 
         location / {
-            proxy_pass http://frontend:3000/;
+            proxy_pass http://client:3000/;
         }
 
         location /.well-known/acme-challenge/ { root /var/www/certbot; }
@@ -33,7 +33,7 @@ http {
         client_max_body_size 100M;
 
         location / {
-            proxy_pass http://bot:5000/;
+            proxy_pass http://server:5000/;
 
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
