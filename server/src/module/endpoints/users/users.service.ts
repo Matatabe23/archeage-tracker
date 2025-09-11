@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import {
+	Injectable,
+	BadRequestException,
+	InternalServerErrorException,
+	UnauthorizedException
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Users } from 'src/module/db/models/users.repository';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -6,6 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { MailRepository } from 'src/module/service/mail/mail.repository';
 import { Sequelize } from 'sequelize-typescript';
 import { randomBytes } from 'crypto';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class UsersService {
@@ -113,5 +119,39 @@ export class UsersService {
 		await user.save();
 
 		return { message: 'Email успешно подтверждён. Вы можете пользоваться аккаунтом.' };
+	}
+
+	async login(loginOrEmail: string, password: string): Promise<{ user: any; message: string }> {
+		// Ищем пользователя по email или имени
+		const user = await this.usersRepository.findOne({
+			where: {
+				[Op.or]: [{ email: loginOrEmail }, { name: loginOrEmail }]
+			}
+		});
+
+		if (!user) {
+			throw new UnauthorizedException('Пользователь не найден или удалён');
+		}
+
+		if (!user.isEmailVerified) {
+			throw new UnauthorizedException('Email не подтверждён');
+		}
+
+		// Проверяем пароль
+		const passwordMatches = await bcrypt.compare(password, user.passwordHash);
+		if (!passwordMatches) {
+			throw new UnauthorizedException('Неверный пароль');
+		}
+
+		// Возвращаем безопасный объект
+		const userObj = user.get({ plain: true });
+		delete userObj.passwordHash;
+		delete userObj.emailVerificationToken;
+		delete userObj.emailVerificationExpiresAt;
+
+		return {
+			user: userObj,
+			message: 'Вход выполнен успешно'
+		};
 	}
 }

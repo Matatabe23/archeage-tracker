@@ -5,6 +5,8 @@ import { ApiTags } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Users } from 'src/module/db/models/users.repository';
 import { CreateUserDoc } from './decorators/create-user.decorator';
+import { LoginUserDto } from './dto/login.dto';
+import { LoginrDoc } from './decorators/login.decorator';
 @Controller('user')
 @ApiTags('Пользователи')
 export class UsersController {
@@ -20,5 +22,11 @@ export class UsersController {
 	async verifyEmail(@Query('token') token: string) {
 		await this.userService.confirmEmail(token);
 		return { message: 'Email успешно подтверждён' };
+	}
+
+	@Post('login')
+	@LoginrDoc()
+	async login(@Body() dto: LoginUserDto) {
+		return this.userService.login(dto.loginOrEmail, dto.password);
 	}
 }
