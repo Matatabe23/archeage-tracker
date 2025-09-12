@@ -130,7 +130,7 @@ export class UsersService {
 		});
 
 		if (!user) {
-			throw new UnauthorizedException('Пользователь не найден или удалён');
+			throw new UnauthorizedException('Пользователь не найден');
 		}
 
 		if (!user.isEmailVerified) {

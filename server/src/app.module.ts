@@ -15,6 +15,7 @@ import { FilesModule } from './module/endpoints/files/files.module';
 
 import { WebSocketModule } from './module/websocket/websocket.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { TokenModule } from './module/service/token/token.module';
 
 @Module({
 	imports: [
@@ -31,7 +32,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 		FilesModule,
 
 		S3Module,
-		FileModule
+		FileModule,
+		TokenModule
 	],
 	controllers: [AppController],
 	providers: [AppService]
