@@ -27,6 +27,6 @@ export class UsersController {
 	@Post('login')
 	@LoginrDoc()
 	async login(@Body() dto: LoginUserDto, @Req() req: Request) {
-		return this.userService.login(dto.loginOrEmail, dto.password, dto.deviceInfo, req);
+		return this.userService.login(dto, req);
 	}
 }

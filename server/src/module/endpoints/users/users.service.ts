@@ -14,6 +14,7 @@ import { randomBytes } from 'crypto';
 import { Op } from 'sequelize';
 import { TokenRepository } from 'src/module/service/token/token.repository';
 import { RefreshToken } from 'src/module/db/models/refresh-token.repository';
+import { LoginUserDto } from './dto/login.dto';
 
 @Injectable()
 export class UsersService {
@@ -127,38 +128,25 @@ export class UsersService {
 	}
 
 	async login(
-		loginOrEmail: string,
-		password: string,
-		deviceInfo: {
-			deviceName?: string;
-			deviceType?: string;
-			userAgent?: string;
-			ipAddress?: string;
-		} = {},
+		loginDto: LoginUserDto,
 		req?: Request
 	): Promise<{ user: any; accessToken: string; refreshToken: string; message: string }> {
-		// Ищем пользователя по email или имени
+		const { loginOrEmail, password, deviceInfo } = loginDto;
+
+		// --- Поиск пользователя ---
 		const user = await this.usersRepository.findOne({
 			where: {
 				[Op.or]: [{ email: loginOrEmail }, { name: loginOrEmail }]
 			}
 		});
+		if (!user) throw new UnauthorizedException('Пользователь не найден');
+		if (!user.isEmailVerified) throw new UnauthorizedException('Email не подтверждён');
 
-		if (!user) {
-			throw new UnauthorizedException('Пользователь не найден');
-		}
-
-		if (!user.isEmailVerified) {
-			throw new UnauthorizedException('Email не подтверждён');
-		}
-
-		// Проверяем пароль
+		// --- Проверка пароля ---
 		const passwordMatches = await bcrypt.compare(password, user.passwordHash);
-		if (!passwordMatches) {
-			throw new UnauthorizedException('Неверный пароль');
-		}
+		if (!passwordMatches) throw new UnauthorizedException('Неверный пароль');
 
-		// Убираем лишние поля
+		// --- Подготовка объекта пользователя без чувствительных полей ---
 		const userObj = user.get({ plain: true });
 		delete userObj.passwordHash;
 		delete userObj.emailVerificationToken;
@@ -166,28 +154,35 @@ export class UsersService {
 
 		// --- Создание токенов ---
 		const payload = { sub: user.id, email: user.email };
-
 		const accessToken = this.tokenRepository.sign(payload, {
 			secret: process.env.JWT_ACCESS_SECRET,
 			expiresIn: '15m'
 		});
-
 		const refreshToken = this.tokenRepository.sign(payload, {
 			secret: process.env.JWT_REFRESH_SECRET,
 			expiresIn: '30d'
 		});
 
-		// Собираем deviceInfo (приоритет у переданных данных)
+		// --- Сбор deviceInfo и гео ---
 		const finalDeviceInfo = {
-			deviceName: deviceInfo.deviceName || 'unknown',
-			deviceType: deviceInfo.deviceType || 'web',
-			userAgent: deviceInfo.userAgent || req?.headers['user-agent'] || 'unknown',
+			deviceName: deviceInfo?.deviceName || 'unknown',
+			deviceType: deviceInfo?.deviceType || 'web',
+			userAgent: deviceInfo?.userAgent || req?.headers['user-agent'] || 'unknown',
 			ipAddress:
-				deviceInfo.ipAddress ||
-				(req?.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim()
+				deviceInfo?.ipAddress ||
+				(req?.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+				'unknown',
+			location: deviceInfo?.location || null,
+			latitude: deviceInfo?.latitude || null,
+			longitude: deviceInfo?.longitude || null,
+			country: deviceInfo?.country || null,
+			city: deviceInfo?.city || null,
+			region: deviceInfo?.region || null,
+			timezone: deviceInfo?.timezone || null,
+			metadata: deviceInfo?.metadata ? JSON.stringify(deviceInfo.metadata) : null
 		};
 
-		// Сохраняем refresh в БД
+		// --- Сохраняем refresh токен в БД ---
 		await this.refreshToken.create({
 			userId: user.id,
 			token: refreshToken,
