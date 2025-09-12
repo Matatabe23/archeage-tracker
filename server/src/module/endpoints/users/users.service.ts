@@ -12,14 +12,19 @@ import { MailRepository } from 'src/module/service/mail/mail.repository';
 import { Sequelize } from 'sequelize-typescript';
 import { randomBytes } from 'crypto';
 import { Op } from 'sequelize';
+import { TokenRepository } from 'src/module/service/token/token.repository';
+import { RefreshToken } from 'src/module/db/models/refresh-token.repository';
 
 @Injectable()
 export class UsersService {
 	constructor(
 		@InjectModel(Users)
 		private readonly usersRepository: typeof Users,
+		@InjectModel(RefreshToken)
+		private readonly refreshToken: typeof RefreshToken,
 		private readonly mailRepository: MailRepository,
-		private readonly sequelize: Sequelize // для транзакций
+		private readonly sequelize: Sequelize,
+		private readonly tokenRepository: TokenRepository
 	) {}
 
 	async createUser(dto: CreateUserDto): Promise<Users> {
@@ -121,7 +126,17 @@ export class UsersService {
 		return { message: 'Email успешно подтверждён. Вы можете пользоваться аккаунтом.' };
 	}
 
-	async login(loginOrEmail: string, password: string): Promise<{ user: any; message: string }> {
+	async login(
+		loginOrEmail: string,
+		password: string,
+		deviceInfo: {
+			deviceName?: string;
+			deviceType?: string;
+			userAgent?: string;
+			ipAddress?: string;
+		} = {},
+		req?: Request
+	): Promise<{ user: any; accessToken: string; refreshToken: string; message: string }> {
 		// Ищем пользователя по email или имени
 		const user = await this.usersRepository.findOne({
 			where: {
@@ -143,14 +158,49 @@ export class UsersService {
 			throw new UnauthorizedException('Неверный пароль');
 		}
 
-		// Возвращаем безопасный объект
+		// Убираем лишние поля
 		const userObj = user.get({ plain: true });
 		delete userObj.passwordHash;
 		delete userObj.emailVerificationToken;
 		delete userObj.emailVerificationExpiresAt;
 
+		// --- Создание токенов ---
+		const payload = { sub: user.id, email: user.email };
+
+		const accessToken = this.tokenRepository.sign(payload, {
+			secret: process.env.JWT_ACCESS_SECRET,
+			expiresIn: '15m'
+		});
+
+		const refreshToken = this.tokenRepository.sign(payload, {
+			secret: process.env.JWT_REFRESH_SECRET,
+			expiresIn: '30d'
+		});
+
+		// Собираем deviceInfo (приоритет у переданных данных)
+		const finalDeviceInfo = {
+			deviceName: deviceInfo.deviceName || 'unknown',
+			deviceType: deviceInfo.deviceType || 'web',
+			userAgent: deviceInfo.userAgent || req?.headers['user-agent'] || 'unknown',
+			ipAddress:
+				deviceInfo.ipAddress ||
+				(req?.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim()
+		};
+
+		// Сохраняем refresh в БД
+		await this.refreshToken.create({
+			userId: user.id,
+			token: refreshToken,
+			...finalDeviceInfo,
+			isActive: true,
+			isRevoked: false,
+			expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 дней
+		});
+
 		return {
 			user: userObj,
+			accessToken,
+			refreshToken,
 			message: 'Вход выполнен успешно'
 		};
 	}

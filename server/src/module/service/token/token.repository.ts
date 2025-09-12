@@ -6,42 +6,9 @@ export class TokenRepository {
 	constructor(private readonly jwtService: JwtService) {}
 
 	/**
-	 * Генерация access токена
-	 * @param payload - данные, которые нужно зашить в токен
-	 * @param expiresIn - время жизни токена (по умолчанию 15m)
-	 * @param secret - секрет для подписи (если не указан, берётся дефолтный)
+	 * Универсальная генерация токена
 	 */
-	generateAccessToken<T extends object>(
-		payload: T,
-		expiresIn: string | number = '15m',
-		secret?: string
-	): string {
-		const options: JwtSignOptions = {
-			expiresIn
-		};
-		if (secret) {
-			options.secret = secret;
-		}
-		return this.jwtService.sign(payload, options);
-	}
-
-	/**
-	 * Генерация refresh токена
-	 * @param payload - данные, которые нужно зашить в токен
-	 * @param expiresIn - время жизни токена (по умолчанию 7d)
-	 * @param secret - секрет для подписи (если не указан, берётся дефолтный)
-	 */
-	generateRefreshToken<T extends object>(
-		payload: T,
-		expiresIn: string | number = '7d',
-		secret?: string
-	): string {
-		const options: JwtSignOptions = {
-			expiresIn
-		};
-		if (secret) {
-			options.secret = secret;
-		}
+	sign<T extends object>(payload: T, options: JwtSignOptions): string {
 		return this.jwtService.sign(payload, options);
 	}
 

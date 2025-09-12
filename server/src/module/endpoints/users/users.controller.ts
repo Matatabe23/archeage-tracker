@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 
 import { ApiTags } from '@nestjs/swagger';
@@ -26,7 +26,7 @@ export class UsersController {
 
 	@Post('login')
 	@LoginrDoc()
-	async login(@Body() dto: LoginUserDto) {
-		return this.userService.login(dto.loginOrEmail, dto.password);
+	async login(@Body() dto: LoginUserDto, @Req() req: Request) {
+		return this.userService.login(dto.loginOrEmail, dto.password, dto.deviceInfo, req);
 	}
 }
