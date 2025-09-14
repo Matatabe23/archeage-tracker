@@ -48,10 +48,10 @@ async function bootstrap() {
 	app.setGlobalPrefix('');
 
 	const config = new DocumentBuilder()
-		.setTitle('Название вашего API')
-		.setDescription('Описание вашего API')
+		.setTitle('Archeage Tracker DOCS')
+		.setDescription('Апи для трекера по игре Archeage')
 		.setVersion('1.0')
-		.addBearerAuth()
+		.addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'access-token')
 		.build();
 
 	const document = SwaggerModule.createDocument(app, config);

@@ -1,11 +1,5 @@
 // src/guards/auth.guard.ts
-import {
-	Injectable,
-	CanActivate,
-	ExecutionContext,
-	UnauthorizedException,
-	ForbiddenException
-} from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ModuleRef } from '@nestjs/core';
 import { Request } from 'express';
@@ -26,7 +20,7 @@ export class AuthGuard implements CanActivate {
 		const authHeader = request.headers.authorization;
 
 		if (!authHeader) {
-			throw new UnauthorizedException('Токен не найден');
+			throw new UnauthorizedException('Вы не авторизированы');
 		}
 
 		const [bearer, token] = authHeader.split(' ');
@@ -38,13 +32,10 @@ export class AuthGuard implements CanActivate {
 		try {
 			const decoded = await this.jwtService.verifyAsync(token);
 
-			if (!decoded.isTeamMember) {
-				throw new ForbiddenException('Нет прав для доступа');
-			}
-
 			(request as any).user = decoded;
 			return true;
 		} catch (error) {
+			console.log(error);
 			throw new UnauthorizedException('Токен недействителен или просрочен');
 		}
 	}

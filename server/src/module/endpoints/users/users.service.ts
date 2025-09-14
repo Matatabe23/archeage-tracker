@@ -248,4 +248,20 @@ export class UsersService {
 			refreshToken // возвращаем тот же refresh (или можно сгенерировать новый и заменить в БД)
 		};
 	}
+
+	async logout(refreshToken: string): Promise<{ message: string }> {
+		const tokenRecord = await this.refreshToken.findOne({
+			where: { token: refreshToken, isActive: true, isRevoked: false }
+		});
+
+		if (!tokenRecord) {
+			throw new UnauthorizedException('Токен не найден или уже неактивен');
+		}
+
+		tokenRecord.isActive = false;
+		tokenRecord.isRevoked = true;
+		await tokenRecord.save();
+
+		return { message: 'Вы успешно вышли из системы' };
+	}
 }

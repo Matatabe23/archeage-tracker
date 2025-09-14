@@ -1,13 +1,15 @@
-import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Users } from 'src/module/db/models/users.repository';
 import { CreateUserDoc } from './decorators/create-user.decorator';
 import { LoginUserDto } from './dto/login.dto';
 import { LoginrDoc } from './decorators/login.decorator';
-import { RefreshTokenDoc } from './decorators/refresh-token.decorator copy';
+import { RefreshTokenDoc } from './decorators/refresh-token.decorator';
+import { LogoutDoc } from './decorators/logout.decorator';
+import { AuthGuard } from 'src/guards/auth.guard';
 @Controller('user')
 @ApiTags('Пользователи')
 export class UsersController {
@@ -35,5 +37,13 @@ export class UsersController {
 	@RefreshTokenDoc()
 	async refreshToken(@Body('refreshToken') token: string) {
 		return this.userService.refreshAccessToken(token);
+	}
+
+	@Post('logout')
+	@ApiBearerAuth('access-token')
+	@UseGuards(AuthGuard)
+	@LogoutDoc()
+	async logout(@Body('refreshToken') token: string) {
+		return this.userService.logout(token);
 	}
 }
