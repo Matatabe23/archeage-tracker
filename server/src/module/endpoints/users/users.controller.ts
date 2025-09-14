@@ -10,6 +10,7 @@ import { LoginrDoc } from './decorators/login.decorator';
 import { RefreshTokenDoc } from './decorators/refresh-token.decorator';
 import { LogoutDoc } from './decorators/logout.decorator';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { GetProfileDoc } from './decorators/get-profile.decorator';
 @Controller('user')
 @ApiTags('Пользователи')
 export class UsersController {
@@ -45,5 +46,13 @@ export class UsersController {
 	@LogoutDoc()
 	async logout(@Body('refreshToken') token: string) {
 		return this.userService.logout(token);
+	}
+
+	@Get('me')
+	@ApiBearerAuth('access-token')
+	@UseGuards(AuthGuard)
+	@GetProfileDoc()
+	async getProfile(@Req() req: any) {
+		return this.userService.getProfile(req.user.sub);
 	}
 }

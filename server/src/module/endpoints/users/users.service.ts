@@ -264,4 +264,19 @@ export class UsersService {
 
 		return { message: 'Вы успешно вышли из системы' };
 	}
+
+	async getProfile(userId: number): Promise<any> {
+		const user = await this.usersRepository.findByPk(userId);
+
+		if (!user) {
+			throw new UnauthorizedException('Пользователь не найден');
+		}
+
+		const userObj = user.get({ plain: true });
+		delete userObj.passwordHash;
+		delete userObj.emailVerificationToken;
+		delete userObj.emailVerificationExpiresAt;
+
+		return userObj;
+	}
 }
