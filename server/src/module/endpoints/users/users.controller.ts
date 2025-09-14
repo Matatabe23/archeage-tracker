@@ -7,6 +7,7 @@ import { Users } from 'src/module/db/models/users.repository';
 import { CreateUserDoc } from './decorators/create-user.decorator';
 import { LoginUserDto } from './dto/login.dto';
 import { LoginrDoc } from './decorators/login.decorator';
+import { RefreshTokenDoc } from './decorators/refresh-token.decorator copy';
 @Controller('user')
 @ApiTags('Пользователи')
 export class UsersController {
@@ -28,5 +29,11 @@ export class UsersController {
 	@LoginrDoc()
 	async login(@Body() dto: LoginUserDto, @Req() req: Request) {
 		return this.userService.login(dto, req);
+	}
+
+	@Post('refresh-token')
+	@RefreshTokenDoc()
+	async refreshToken(@Body('refreshToken') token: string) {
+		return this.userService.refreshAccessToken(token);
 	}
 }

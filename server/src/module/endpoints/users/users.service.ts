@@ -199,4 +199,53 @@ export class UsersService {
 			message: 'Вход выполнен успешно'
 		};
 	}
+
+	async refreshAccessToken(
+		refreshToken: string
+	): Promise<{ accessToken: string; refreshToken: string }> {
+		const tokenRecord = await this.refreshToken.findOne({
+			where: { token: refreshToken, isActive: true, isRevoked: false }
+		});
+
+		if (!tokenRecord) {
+			throw new UnauthorizedException('Недействительный refresh токен');
+		}
+
+		if (tokenRecord.expiresAt < new Date()) {
+			tokenRecord.isActive = false;
+			await tokenRecord.save();
+			throw new UnauthorizedException('Refresh токен истёк');
+		}
+
+		// --- Проверка подписи токена ---
+		let payload: any;
+		try {
+			payload = this.tokenRepository.verifyToken(
+				refreshToken,
+				process.env.JWT_REFRESH_SECRET
+			);
+		} catch (err) {
+			throw new UnauthorizedException('Неверный refresh токен');
+		}
+
+		const user = await this.usersRepository.findByPk(payload.sub);
+		if (!user) {
+			throw new UnauthorizedException('Пользователь не найден');
+		}
+
+		// --- Создаём новый access токен ---
+		const newAccessToken = this.tokenRepository.sign(
+			{ sub: user.id, email: user.email },
+			{ secret: process.env.JWT_ACCESS_SECRET, expiresIn: '15m' }
+		);
+
+		// Можно обновить срок жизни refresh токена, если хочешь «скользящее» окно
+		// tokenRecord.expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+		// await tokenRecord.save();
+
+		return {
+			accessToken: newAccessToken,
+			refreshToken // возвращаем тот же refresh (или можно сгенерировать новый и заменить в БД)
+		};
+	}
 }
