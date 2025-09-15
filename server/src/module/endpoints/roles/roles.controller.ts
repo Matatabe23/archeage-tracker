@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Delete,
+	Get,
+	Param,
+	ParseIntPipe,
+	Patch,
+	Post,
+	Query,
+	UseGuards
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -15,31 +26,29 @@ import { AuthGuard } from 'src/guards/auth.guard';
 @ApiBearerAuth('access-token')
 @UseGuards(AuthGuard)
 export class RolesController {
-  constructor(private readonly rolesService: RolesService) {}
+	constructor(private readonly rolesService: RolesService) {}
 
-  @Post()
-  @CreateRoleDoc()
-  async create(@Body() dto: CreateRoleDto) {
-    return this.rolesService.create(dto);
-  }
+	@Post()
+	@CreateRoleDoc()
+	async create(@Body() dto: CreateRoleDto) {
+		return this.rolesService.create(dto);
+	}
 
-  @Patch(':id')
-  @UpdateRoleDoc()
-  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateRoleDto) {
-    return this.rolesService.update(id, dto);
-  }
+	@Patch(':id')
+	@UpdateRoleDoc()
+	async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateRoleDto) {
+		return this.rolesService.update(id, dto);
+	}
 
-  @Delete(':id')
-  @DeleteRoleDoc()
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    return this.rolesService.remove(id);
-  }
+	@Delete(':id')
+	@DeleteRoleDoc()
+	async remove(@Param('id', ParseIntPipe) id: number) {
+		return this.rolesService.remove(id);
+	}
 
-  @Get()
-  @GetRolesDoc()
-  async list(@Query() query: GetRolesDto) {
-    return this.rolesService.list(query);
-  }
+	@Get()
+	@GetRolesDoc()
+	async list(@Query() query: GetRolesDto) {
+		return this.rolesService.list(query);
+	}
 }
-
-
