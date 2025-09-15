@@ -141,11 +141,12 @@ export class UsersService {
 	): Promise<{ user: any; accessToken: string; refreshToken: string; message: string }> {
 		const { loginOrEmail, password, deviceInfo } = loginDto;
 
-		// --- Поиск пользователя ---
+		// --- Поиск пользователя с ролями ---
 		const user = await this.usersRepository.findOne({
 			where: {
 				[Op.or]: [{ email: loginOrEmail }, { name: loginOrEmail }]
-			}
+			},
+			include: [{ model: Roles, through: { attributes: [] } }]
 		});
 		if (!user) throw new UnauthorizedException('Пользователь не найден');
 		if (!user.isEmailVerified) throw new UnauthorizedException('Email не подтверждён');
@@ -160,8 +161,18 @@ export class UsersService {
 		delete userObj.emailVerificationToken;
 		delete userObj.emailVerificationExpiresAt;
 
-		// --- Создание токенов ---
-		const payload = { sub: user.id, email: user.email };
+		// --- Создание токенов с ролями ---
+		const userRoles =
+			user.roles
+				?.map((role) => role.permissions)
+				.join(',')
+				.split(',')
+				.filter(Boolean) || [];
+		const payload = {
+			sub: user.id,
+			email: user.email,
+			roles: userRoles
+		};
 		const accessToken = this.tokenRepository.sign(payload, {
 			secret: process.env.JWT_ACCESS_SECRET,
 			expiresIn: '15m'
@@ -233,14 +244,26 @@ export class UsersService {
 			throw new UnauthorizedException('Неверный refresh токен');
 		}
 
-		const user = await this.usersRepository.findByPk(payload.sub);
+		const user = await this.usersRepository.findByPk(payload.sub, {
+			include: [{ model: Roles, through: { attributes: [] } }]
+		});
 		if (!user) {
 			throw new UnauthorizedException('Пользователь не найден');
 		}
 
-		// --- Создаём новый access токен ---
+		// --- Создаём новый access токен с ролями ---
+		const userRoles =
+			user.roles
+				?.map((role) => role.permissions)
+				.join(',')
+				.split(',')
+				.filter(Boolean) || [];
 		const newAccessToken = this.tokenRepository.sign(
-			{ sub: user.id, email: user.email },
+			{
+				sub: user.id,
+				email: user.email,
+				roles: userRoles
+			},
 			{ secret: process.env.JWT_ACCESS_SECRET, expiresIn: '15m' }
 		);
 

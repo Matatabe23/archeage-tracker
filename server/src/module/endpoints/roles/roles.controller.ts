@@ -20,11 +20,14 @@ import { UpdateRoleDoc } from './decorators/update-role.decorator';
 import { DeleteRoleDoc } from './decorators/delete-role.decorator';
 import { GetRolesDoc } from './decorators/get-roles.decorator';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { Roles } from 'src/decorators/roles.decorator';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { ERolePermission } from 'src/types/permissions/roles';
 
 @Controller('roles')
 @ApiTags('Роли')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RolesGuard)
 export class RolesController {
 	constructor(private readonly rolesService: RolesService) {}
 
@@ -48,6 +51,7 @@ export class RolesController {
 
 	@Get()
 	@GetRolesDoc()
+	@Roles(ERolePermission.GET_ROLES)
 	async list(@Query() query: GetRolesDto) {
 		return this.rolesService.list(query);
 	}
