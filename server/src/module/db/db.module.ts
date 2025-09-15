@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { usersDBList } from './models/users';
 
 // Импортируем модели
-import { Users } from './models/users.repository';
-import { RefreshToken } from './models/refresh-token.repository';
 
-const dbList = [Users, RefreshToken];
+const dbList = [...usersDBList];
 
 @Module({
 	imports: [

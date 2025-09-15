@@ -5,7 +5,7 @@ import {
 	UnauthorizedException
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Users } from 'src/module/db/models/users.repository';
+import { Users } from 'src/module/db/models/users/users.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { MailRepository } from 'src/module/service/mail/mail.repository';
@@ -13,7 +13,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { randomBytes } from 'crypto';
 import { Op } from 'sequelize';
 import { TokenRepository } from 'src/module/service/token/token.repository';
-import { RefreshToken } from 'src/module/db/models/refresh-token.repository';
+import { RefreshToken } from 'src/module/db/models/users/refresh-token.repository';
 import { LoginUserDto } from './dto/login.dto';
 
 @Injectable()

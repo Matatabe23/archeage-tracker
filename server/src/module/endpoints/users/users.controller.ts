@@ -3,7 +3,7 @@ import { UsersService } from './users.service';
 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Users } from 'src/module/db/models/users.repository';
+import { Users } from 'src/module/db/models/users/users.repository';
 import { CreateUserDoc } from './decorators/create-user.decorator';
 import { LoginUserDto } from './dto/login.dto';
 import { LoginrDoc } from './decorators/login.decorator';
@@ -11,6 +11,7 @@ import { RefreshTokenDoc } from './decorators/refresh-token.decorator';
 import { LogoutDoc } from './decorators/logout.decorator';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { GetProfileDoc } from './decorators/get-profile.decorator';
+import { Roles } from 'src/decorators/roles.decorator';
 @Controller('user')
 @ApiTags('Пользователи')
 export class UsersController {
@@ -52,6 +53,7 @@ export class UsersController {
 	@ApiBearerAuth('access-token')
 	@UseGuards(AuthGuard)
 	@GetProfileDoc()
+	@Roles()
 	async getProfile(@Req() req: any) {
 		return this.userService.getProfile(req.user.sub);
 	}

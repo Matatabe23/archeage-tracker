@@ -1,5 +1,7 @@
-import { Column, Model, Table, DataType, HasMany } from 'sequelize-typescript';
+import { Column, Model, Table, DataType, HasMany, BelongsToMany } from 'sequelize-typescript';
 import { RefreshToken } from './refresh-token.repository';
+import { UserRoles } from './user-roles.repository';
+import { Roles } from './roles.repository';
 
 @Table
 export class Users extends Model {
@@ -81,4 +83,8 @@ export class Users extends Model {
 	// Связь с refresh токенами (один пользователь - много токенов)
 	@HasMany(() => RefreshToken, { foreignKey: 'userId', as: 'refreshTokens' })
 	refreshTokens: RefreshToken[];
+
+	// Связь многие-ко-многим с ролями
+	@BelongsToMany(() => Roles, () => UserRoles)
+	roles: Roles[];
 }
