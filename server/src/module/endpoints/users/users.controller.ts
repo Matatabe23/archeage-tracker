@@ -71,12 +71,12 @@ export class UsersController {
 		return this.userService.getProfile(req.user.sub);
 	}
 
-	@Patch(':id')
+	@Patch('me')
 	@ApiBearerAuth('access-token')
 	@UseGuards(AuthGuard)
 	@UpdateUserDoc()
-	async updateUser(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto) {
-		return this.userService.updateUser(id, dto);
+	async updateUser(@Req() req: any, @Body() dto: UpdateUserDto) {
+		return this.userService.updateUser(req.user.sub, dto);
 	}
 
 	@Patch(':id/roles')

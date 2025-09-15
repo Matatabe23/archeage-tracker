@@ -6,8 +6,8 @@ export function UpdateUserDoc(): MethodDecorator {
 	return function (target, propertyKey, descriptor) {
 		// Добавляем описание ручки
 		ApiOperation({
-			summary: 'Редактирование пользователя',
-			description: 'Обновляет данные пользователя по ID'
+			summary: 'Редактирование собственного профиля',
+			description: 'Обновляет данные текущего авторизованного пользователя'
 		})(target, propertyKey, descriptor);
 
 		ApiResponse({
@@ -19,6 +19,12 @@ export function UpdateUserDoc(): MethodDecorator {
 		ApiResponse({
 			status: 400,
 			description: 'Некорректные данные',
+			type: ErrorDto
+		})(target, propertyKey, descriptor);
+
+		ApiResponse({
+			status: 401,
+			description: 'Не авторизован',
 			type: ErrorDto
 		})(target, propertyKey, descriptor);
 
@@ -51,8 +57,7 @@ export function UpdateUserRolesDoc(): MethodDecorator {
 				type: 'object',
 				properties: {
 					message: { type: 'string', example: 'Роли успешно назначены пользователю' },
-					user: { type: 'object' },
-					roles: { type: 'array', items: { type: 'object' } }
+					user: { type: 'object' }
 				}
 			}
 		})(target, propertyKey, descriptor);
@@ -60,6 +65,12 @@ export function UpdateUserRolesDoc(): MethodDecorator {
 		ApiResponse({
 			status: 400,
 			description: 'Некорректные данные или роли не найдены',
+			type: ErrorDto
+		})(target, propertyKey, descriptor);
+
+		ApiResponse({
+			status: 401,
+			description: 'Не авторизован',
 			type: ErrorDto
 		})(target, propertyKey, descriptor);
 
