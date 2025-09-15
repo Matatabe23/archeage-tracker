@@ -187,7 +187,6 @@ export class UsersService {
 			userId: user.id,
 			token: refreshToken,
 			...finalDeviceInfo,
-			isActive: true,
 			isRevoked: false,
 			expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 дней
 		});
@@ -204,7 +203,7 @@ export class UsersService {
 		refreshToken: string
 	): Promise<{ accessToken: string; refreshToken: string }> {
 		const tokenRecord = await this.refreshToken.findOne({
-			where: { token: refreshToken, isActive: true, isRevoked: false }
+			where: { token: refreshToken, isRevoked: false }
 		});
 
 		if (!tokenRecord) {
@@ -212,8 +211,6 @@ export class UsersService {
 		}
 
 		if (tokenRecord.expiresAt < new Date()) {
-			tokenRecord.isActive = false;
-			await tokenRecord.save();
 			throw new UnauthorizedException('Refresh токен истёк');
 		}
 
@@ -251,14 +248,13 @@ export class UsersService {
 
 	async logout(refreshToken: string): Promise<{ message: string }> {
 		const tokenRecord = await this.refreshToken.findOne({
-			where: { token: refreshToken, isActive: true, isRevoked: false }
+			where: { token: refreshToken, isRevoked: false }
 		});
 
 		if (!tokenRecord) {
 			throw new UnauthorizedException('Токен не найден или уже неактивен');
 		}
 
-		tokenRecord.isActive = false;
 		tokenRecord.isRevoked = true;
 		await tokenRecord.save();
 

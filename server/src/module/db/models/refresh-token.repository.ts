@@ -46,9 +46,6 @@ export class RefreshToken extends Model {
 	@Column({ allowNull: true })
 	timezone: string; // Часовой пояс
 
-	@Column({ defaultValue: true })
-	isActive: boolean; // Активен ли токен
-
 	@Column({ defaultValue: false })
 	isRevoked: boolean; // Отозван ли токен
 
