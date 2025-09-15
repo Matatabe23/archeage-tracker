@@ -20,6 +20,8 @@ export class RolesGuard implements CanActivate {
 		const request = context.switchToHttp().getRequest();
 		const user = request.user; // обычно сюда кладёт Passport или JwtStrategy
 
+		console.log(user);
+
 		return requiredRoles.some((role) => user.roles?.includes(role));
 	}
 }

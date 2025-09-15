@@ -25,6 +25,8 @@ import { GetProfileDoc } from './decorators/get-profile.decorator';
 import { Roles } from 'src/decorators/roles.decorator';
 import { UpdateUserDto, UpdateUserRolesDto } from './dto/update-user.dto';
 import { UpdateUserDoc, UpdateUserRolesDoc } from './decorators/update-user.decorator';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { EUserPermission } from 'src/types/permissions/users';
 @Controller('user')
 @ApiTags('Пользователи')
 export class UsersController {
@@ -81,8 +83,9 @@ export class UsersController {
 
 	@Patch(':id/roles')
 	@ApiBearerAuth('access-token')
-	@UseGuards(AuthGuard)
+	@UseGuards(AuthGuard, RolesGuard)
 	@UpdateUserRolesDoc()
+	@Roles(EUserPermission.UPDATE_USER_ROLES)
 	async updateUserRoles(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserRolesDto) {
 		return this.userService.updateUserRoles(id, dto);
 	}

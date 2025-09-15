@@ -33,18 +33,21 @@ export class RolesController {
 
 	@Post()
 	@CreateRoleDoc()
+	@Roles(ERolePermission.CREATE_ROLE)
 	async create(@Body() dto: CreateRoleDto) {
 		return this.rolesService.create(dto);
 	}
 
 	@Patch(':id')
 	@UpdateRoleDoc()
+	@Roles(ERolePermission.UPDATE_ROLE)
 	async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateRoleDto) {
 		return this.rolesService.update(id, dto);
 	}
 
 	@Delete(':id')
 	@DeleteRoleDoc()
+	@Roles(ERolePermission.DELETE_ROLE)
 	async remove(@Param('id', ParseIntPipe) id: number) {
 		return this.rolesService.remove(id);
 	}
