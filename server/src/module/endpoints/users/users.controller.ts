@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Get,
+	Post,
+	Query,
+	Req,
+	UseGuards,
+	Patch,
+	Param,
+	ParseIntPipe
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -12,6 +23,8 @@ import { LogoutDoc } from './decorators/logout.decorator';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { GetProfileDoc } from './decorators/get-profile.decorator';
 import { Roles } from 'src/decorators/roles.decorator';
+import { UpdateUserDto, UpdateUserRolesDto } from './dto/update-user.dto';
+import { UpdateUserDoc, UpdateUserRolesDoc } from './decorators/update-user.decorator';
 @Controller('user')
 @ApiTags('Пользователи')
 export class UsersController {
@@ -56,5 +69,21 @@ export class UsersController {
 	@Roles()
 	async getProfile(@Req() req: any) {
 		return this.userService.getProfile(req.user.sub);
+	}
+
+	@Patch(':id')
+	@ApiBearerAuth('access-token')
+	@UseGuards(AuthGuard)
+	@UpdateUserDoc()
+	async updateUser(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto) {
+		return this.userService.updateUser(id, dto);
+	}
+
+	@Patch(':id/roles')
+	@ApiBearerAuth('access-token')
+	@UseGuards(AuthGuard)
+	@UpdateUserRolesDoc()
+	async updateUserRoles(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserRolesDto) {
+		return this.userService.updateUserRoles(id, dto);
 	}
 }

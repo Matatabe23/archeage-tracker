@@ -15,6 +15,10 @@ import { Op } from 'sequelize';
 import { TokenRepository } from 'src/module/service/token/token.repository';
 import { RefreshToken } from 'src/module/db/models/users/refresh-token.repository';
 import { LoginUserDto } from './dto/login.dto';
+import { UpdateUserDto, UpdateUserRolesDto } from './dto/update-user.dto';
+import { Roles } from 'src/module/db/models/users/roles.repository';
+import { UserRoles } from 'src/module/db/models/users/user-roles.repository';
+import { NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class UsersService {
@@ -23,6 +27,10 @@ export class UsersService {
 		private readonly usersRepository: typeof Users,
 		@InjectModel(RefreshToken)
 		private readonly refreshToken: typeof RefreshToken,
+		@InjectModel(Roles)
+		private readonly rolesRepository: typeof Roles,
+		@InjectModel(UserRoles)
+		private readonly userRolesRepository: typeof UserRoles,
 		private readonly mailRepository: MailRepository,
 		private readonly sequelize: Sequelize,
 		private readonly tokenRepository: TokenRepository
@@ -274,5 +282,89 @@ export class UsersService {
 		delete userObj.emailVerificationExpiresAt;
 
 		return userObj;
+	}
+
+	async updateUser(userId: number, dto: UpdateUserDto): Promise<Users> {
+		const user = await this.usersRepository.findByPk(userId);
+		if (!user) {
+			throw new NotFoundException('Пользователь не найден');
+		}
+
+		// Проверяем уникальность email, если он изменяется
+		if (dto.email && dto.email !== user.email) {
+			const existingUser = await this.usersRepository.findOne({
+				where: { email: dto.email }
+			});
+			if (existingUser) {
+				throw new BadRequestException('Пользователь с таким email уже существует');
+			}
+		}
+
+		// Проверяем уникальность имени, если оно изменяется
+		if (dto.name && dto.name !== user.name) {
+			const existingUser = await this.usersRepository.findOne({
+				where: { name: dto.name }
+			});
+			if (existingUser) {
+				throw new BadRequestException('Пользователь с таким именем уже существует');
+			}
+		}
+
+		// Обновляем поля пользователя
+		Object.assign(user, dto);
+		await user.save();
+
+		return user.get({ plain: true }) as any;
+	}
+
+	async updateUserRoles(userId: number, dto: UpdateUserRolesDto): Promise<any> {
+		const user = await this.usersRepository.findByPk(userId);
+		if (!user) {
+			throw new NotFoundException('Пользователь не найден');
+		}
+
+		// Если роли не переданы, возвращаем текущие роли пользователя
+		if (!dto.roleIds || dto.roleIds.length === 0) {
+			const userWithRoles = await this.usersRepository.findByPk(userId, {
+				include: [{ model: Roles, through: { attributes: [] } }]
+			});
+			return {
+				message: 'Роли пользователя получены',
+				user: userWithRoles.get({ plain: true }),
+				roles: userWithRoles.roles
+			};
+		}
+
+		// Проверяем существование всех ролей
+		const roles = await this.rolesRepository.findAll({
+			where: { id: dto.roleIds }
+		});
+
+		if (roles.length !== dto.roleIds.length) {
+			throw new BadRequestException('Одна или несколько ролей не найдены');
+		}
+
+		// Удаляем все существующие связи пользователя с ролями
+		await this.userRolesRepository.destroy({
+			where: { userId }
+		});
+
+		// Создаем новые связи с ролями
+		const userRoles = dto.roleIds.map((roleId) => ({
+			userId,
+			roleId
+		}));
+
+		await this.userRolesRepository.bulkCreate(userRoles);
+
+		// Получаем обновленного пользователя с ролями
+		const userWithRoles = await this.usersRepository.findByPk(userId, {
+			include: [{ model: Roles, through: { attributes: [] } }]
+		});
+
+		return {
+			message: 'Роли успешно назначены пользователю',
+			user: userWithRoles.get({ plain: true })
+		};
 	}
 }
