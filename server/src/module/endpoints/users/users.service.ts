@@ -258,6 +258,7 @@ export class UsersService {
 				.join(',')
 				.split(',')
 				.filter(Boolean) || [];
+
 		const newAccessToken = this.tokenRepository.sign(
 			{
 				sub: user.id,
@@ -267,13 +268,26 @@ export class UsersService {
 			{ secret: process.env.JWT_ACCESS_SECRET, expiresIn: '15m' }
 		);
 
-		// Можно обновить срок жизни refresh токена, если хочешь «скользящее» окно
-		// tokenRecord.expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-		// await tokenRecord.save();
+		// --- Создаём новый refresh токен ---
+		const newRefreshToken = this.tokenRepository.sign(
+			{
+				sub: user.id,
+				email: user.email,
+				roles: userRoles
+			},
+			{ secret: process.env.JWT_REFRESH_SECRET, expiresIn: '30d' }
+		);
+
+		// --- Обновляем запись в БД: заменяем старый токен на новый ---
+		await tokenRecord.update({
+			token: newRefreshToken,
+			lastUsedAt: new Date(),
+			usageCount: tokenRecord.usageCount + 1
+		});
 
 		return {
 			accessToken: newAccessToken,
-			refreshToken // возвращаем тот же refresh (или можно сгенерировать новый и заменить в БД)
+			refreshToken: newRefreshToken
 		};
 	}
 

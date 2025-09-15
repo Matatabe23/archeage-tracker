@@ -28,7 +28,7 @@ export function RefreshTokenDoc(): MethodDecorator {
 		// Описание ручки
 		ApiOperation({
 			summary: 'Обновление access-токена',
-			description: 'Принимает refresh-токен, проверяет его и возвращает новый access-токен'
+			description: 'Принимает refresh-токен, проверяет его и возвращает новый access-токен и новый refresh-токен (ротация токенов)'
 		})(target, propertyKey, descriptor);
 
 		ApiBody({
@@ -38,7 +38,7 @@ export function RefreshTokenDoc(): MethodDecorator {
 
 		ApiResponse({
 			status: 200,
-			description: 'Новый access-токен успешно сгенерирован',
+			description: 'Новый access-токен и новый refresh-токен успешно сгенерированы (старый refresh-токен заменен)',
 			type: RefreshTokenResponseDto
 		})(target, propertyKey, descriptor);
 
