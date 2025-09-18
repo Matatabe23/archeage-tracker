@@ -1,9 +1,9 @@
 <template>
 	<v-app>
 		<v-navigation-drawer
-			v-if="!isHomePage"
 			v-model="drawer"
 			app
+			color="#123524"
 		>
 			<v-list>
 				<v-list-item
@@ -22,14 +22,11 @@
 		</v-navigation-drawer>
 
 		<v-app-bar
-			v-if="!isHomePage"
 			app
+			color="#123524"
 		>
 			<v-app-bar-nav-icon @click="drawer = !drawer">
-				<Icons
-					icon="MENU"
-					class="h-6 w-6"
-				/>
+				<v-icon class="h-6 w-6">mdi-menu</v-icon>
 			</v-app-bar-nav-icon>
 
 			<span class="hidden md:block"> Пользователей онлайн: {{ onlineUsers }} </span>
@@ -39,10 +36,7 @@
 					<template v-slot:activator="{ props }">
 						<v-avatar
 							v-bind="props"
-							:image="
-								appStore.userData.avatarUrl ||
-								'https://api.dicebear.com/9.x/bottts/svg'
-							"
+							:image="'https://api.dicebear.com/9.x/bottts/svg'"
 						></v-avatar>
 					</template>
 
@@ -59,27 +53,24 @@
 			</div>
 		</v-app-bar>
 
-		<v-main>
+		<v-main class="main">
 			<slot></slot>
 		</v-main>
 
-		<PublishPostsPanel v-model:isOpen="isPublishPanel" />
+		<!-- <PublishPostsPanel v-model:isOpen="isPublishPanel" /> -->
 	</v-app>
 </template>
 
 <script setup lang="ts">
-	import { ref, computed, onMounted } from 'vue';
+	import { ref, computed } from 'vue';
 	import { useRouter } from 'vue-router';
-	import { useSocket } from '@/shared';
 	import { useAppStore } from '@/app/app.store';
 
 	const router = useRouter();
 	const appStore = useAppStore();
-	const socket = useSocket();
 
 	const drawer = ref(false);
 	const onlineUsers = ref(1);
-	const isPublishPanel = ref(false);
 
 	const goTo = (path: string) => {
 		router.push(path);
@@ -88,13 +79,12 @@
 	const PAGES = [
 		{
 			title: 'Главная страница',
-			path: '/publishing-page',
+			path: '/',
 			icon: 'mdi-home',
 			visible: true
 		}
 	];
 
-	const isHomePage = computed(() => router.currentRoute.value.path === '/');
 	const visiblePages = computed(() => PAGES.filter((page) => page.visible));
 
 	const exit = async () => {
@@ -115,12 +105,4 @@
 			function: exit
 		}
 	];
-
-	onMounted(async () => {
-		socket.on('onlineUsers', (count) => {
-			onlineUsers.value = count;
-		});
-
-		socket.emit('requestOnlineUsersUpdate');
-	});
 </script>

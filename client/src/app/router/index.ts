@@ -5,12 +5,14 @@ import { Home } from '@/pages';
 const routes: RouteRecordRaw[] = [
 	{
 		path: '/',
-		component: Home
+		component: Home,
+        meta: { layout: 'page' }
 	},
 
 	{
 		path: '/:catchAll(.*)',
-		redirect: '/not-found'
+		redirect: '/not-found',
+        meta: { layout: 'page' }
 	}
 ];
 

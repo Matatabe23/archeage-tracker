@@ -4,6 +4,16 @@ html {
 	scroll-behavior: smooth;
 }
 
+body {
+	min-width: 320px;
+}
+
+.main {
+    background-color: #0b1d13;
+    color: #fff;
+    min-height: 100vh;
+  }
+
 .full-h-blocks {
 	@apply flex flex-col min-h-0 h-full;
 }
