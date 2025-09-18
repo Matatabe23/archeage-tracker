@@ -1,7 +1,8 @@
-import { Column, Model, Table, DataType, HasMany, BelongsToMany } from 'sequelize-typescript';
+import { Column, Model, Table, DataType, HasMany, BelongsToMany, HasOne } from 'sequelize-typescript';
 import { RefreshToken } from './refresh-token.repository';
 import { UserRoles } from './user-roles.repository';
 import { Roles } from './roles.repository';
+import { UserTempData } from './user-temp-data.repository';
 
 @Table
 export class Users extends Model {
@@ -74,21 +75,13 @@ export class Users extends Model {
 	@Column({ defaultValue: DataType.NOW })
 	updatedAt: Date; // Время последнего обновления записи
 
-	@Column({ allowNull: true })
-	emailVerificationToken: string; // токен для подтверждения email
-
-	@Column({ allowNull: true })
-	emailVerificationExpiresAt: Date; // время истечения токена
-
-	@Column({ allowNull: true })
-	passwordResetToken: string; // токен для восстановления пароля
-
-	@Column({ allowNull: true })
-	passwordResetExpiresAt: Date; // время истечения токена восстановления пароля
-
 	// Связь с refresh токенами (один пользователь - много токенов)
 	@HasMany(() => RefreshToken, { foreignKey: 'userId', as: 'refreshTokens' })
 	refreshTokens: RefreshToken[];
+
+	// Связь с временными данными (один пользователь - одна запись)
+	@HasOne(() => UserTempData, { foreignKey: 'userId', as: 'tempData' })
+	tempData: UserTempData;
 
 	// Связь многие-ко-многим с ролями
 	@BelongsToMany(() => Roles, () => UserRoles)

@@ -20,6 +20,7 @@ import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
 import { ConfirmPasswordResetDto } from './dto/confirm-password-reset.dto';
 import { Roles } from 'src/module/db/models/users/roles.repository';
 import { UserRoles } from 'src/module/db/models/users/user-roles.repository';
+import { UserTempData } from 'src/module/db/models/users/user-temp-data.repository';
 import { NotFoundException } from '@nestjs/common';
 
 @Injectable()
@@ -33,6 +34,8 @@ export class UsersService {
 		private readonly rolesRepository: typeof Roles,
 		@InjectModel(UserRoles)
 		private readonly userRolesRepository: typeof UserRoles,
+		@InjectModel(UserTempData)
+		private readonly userTempDataRepository: typeof UserTempData,
 		private readonly mailRepository: MailRepository,
 		private readonly sequelize: Sequelize,
 		private readonly tokenRepository: TokenRepository
@@ -65,7 +68,15 @@ export class UsersService {
 					lastName: dto.lastName,
 					phone: dto.phone,
 					isActive: true,
-					isEmailVerified: false,
+					isEmailVerified: false
+				},
+				{ transaction }
+			);
+
+			// Создаём запись с временными данными для подтверждения email
+			await this.userTempDataRepository.create(
+				{
+					userId: user.id,
 					emailVerificationToken: token,
 					emailVerificationExpiresAt: expiresAt
 				},
@@ -101,10 +112,6 @@ export class UsersService {
 
 			// Удаляем чувствительные поля
 			delete userObj.passwordHash;
-			delete userObj.emailVerificationToken;
-			delete userObj.emailVerificationExpiresAt;
-			delete userObj.passwordResetToken;
-			delete userObj.passwordResetExpiresAt;
 
 			return userObj;
 		} catch (error) {
@@ -114,28 +121,45 @@ export class UsersService {
 	}
 
 	async confirmEmail(token: string): Promise<{ message: string }> {
-		const user = await this.usersRepository.findOne({
-			where: { emailVerificationToken: token }
+		// Ищем пользователя с токеном подтверждения email
+		const userTempData = await this.userTempDataRepository.findOne({
+			where: {
+				emailVerificationToken: token
+			},
+			include: [{ model: Users }]
 		});
 
-		if (!user) {
+		if (!userTempData) {
 			throw new BadRequestException('Неверный токен');
 		}
+
+		const user = userTempData.user;
 
 		if (user.isEmailVerified) {
 			return { message: 'Email уже подтверждён. Вы можете пользоваться аккаунтом.' };
 		}
 
-		if (user.emailVerificationExpiresAt < new Date()) {
-			// Токен истёк — полностью удаляем запись из базы
-			await user.destroy(); // <-- удаляем полностью
+		if (userTempData.emailVerificationExpiresAt < new Date()) {
+			// Токен истёк — удаляем пользователя и его временные данные
+			await this.sequelize.transaction(async (transaction) => {
+				await this.userTempDataRepository.destroy({
+					where: { userId: user.id },
+					transaction
+				});
+				await user.destroy({ transaction });
+			});
 			throw new BadRequestException('Ссылка устарела.');
 		}
 
-		user.isEmailVerified = true;
-		user.emailVerificationToken = null;
-		user.emailVerificationExpiresAt = null;
-		await user.save();
+		// Подтверждаем email и очищаем токен
+		await this.sequelize.transaction(async (transaction) => {
+			user.isEmailVerified = true;
+			await user.save({ transaction });
+
+			userTempData.emailVerificationToken = null;
+			userTempData.emailVerificationExpiresAt = null;
+			await userTempData.save({ transaction });
+		});
 
 		return { message: 'Email успешно подтверждён. Вы можете пользоваться аккаунтом.' };
 	}
@@ -163,10 +187,6 @@ export class UsersService {
 		// --- Подготовка объекта пользователя без чувствительных полей ---
 		const userObj = user.get({ plain: true });
 		delete userObj.passwordHash;
-		delete userObj.emailVerificationToken;
-		delete userObj.emailVerificationExpiresAt;
-		delete userObj.passwordResetToken;
-		delete userObj.passwordResetExpiresAt;
 
 		// --- Создание токенов с ролями ---
 		const userRoles =
@@ -322,10 +342,6 @@ export class UsersService {
 
 		const userObj = user.get({ plain: true });
 		delete userObj.passwordHash;
-		delete userObj.emailVerificationToken;
-		delete userObj.emailVerificationExpiresAt;
-		delete userObj.passwordResetToken;
-		delete userObj.passwordResetExpiresAt;
 
 		return userObj;
 	}
@@ -433,14 +449,16 @@ export class UsersService {
 			throw new BadRequestException('Email не подтверждён. Сначала подтвердите email');
 		}
 
-		// Генерируем токен для восстановления пароля
+		// Генерируем новый токен для восстановления пароля
 		const token = randomBytes(32).toString('hex');
 		const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 минут
 
-		// Сохраняем токен в базе данных
-		user.passwordResetToken = token;
-		user.passwordResetExpiresAt = expiresAt;
-		await user.save();
+		// Создаём или обновляем временные данные пользователя
+		await this.userTempDataRepository.upsert({
+			userId: user.id,
+			passwordResetToken: token,
+			passwordResetExpiresAt: expiresAt
+		});
 
 		// Определяем URL для восстановления
 		const baseUrl =
@@ -469,32 +487,41 @@ export class UsersService {
 	async confirmPasswordReset(dto: ConfirmPasswordResetDto): Promise<{ message: string }> {
 		const { token, newPassword } = dto;
 
-		// Ищем пользователя по токену восстановления
-		const user = await this.usersRepository.findOne({
-			where: { passwordResetToken: token }
+		// Ищем пользователя с токеном восстановления пароля
+		const userTempData = await this.userTempDataRepository.findOne({
+			where: {
+				passwordResetToken: token
+			},
+			include: [{ model: Users }]
 		});
 
-		if (!user) {
+		if (!userTempData) {
 			throw new BadRequestException('Неверный токен восстановления');
 		}
 
+		const user = userTempData.user;
+
 		// Проверяем, не истёк ли токен
-		if (user.passwordResetExpiresAt < new Date()) {
+		if (userTempData.passwordResetExpiresAt < new Date()) {
 			// Очищаем истёкший токен
-			user.passwordResetToken = null;
-			user.passwordResetExpiresAt = null;
-			await user.save();
+			userTempData.passwordResetToken = null;
+			userTempData.passwordResetExpiresAt = null;
+			await userTempData.save();
 			throw new BadRequestException('Токен восстановления истёк. Запросите новую ссылку');
 		}
 
 		// Хешируем новый пароль
 		const hashPassword = await bcrypt.hash(newPassword, 10);
 
-		// Обновляем пароль и очищаем токен восстановления
-		user.passwordHash = hashPassword;
-		user.passwordResetToken = null;
-		user.passwordResetExpiresAt = null;
-		await user.save();
+		// Обновляем пароль и очищаем токен
+		await this.sequelize.transaction(async (transaction) => {
+			user.passwordHash = hashPassword;
+			await user.save({ transaction });
+
+			userTempData.passwordResetToken = null;
+			userTempData.passwordResetExpiresAt = null;
+			await userTempData.save({ transaction });
+		});
 
 		// Отзываем все refresh токены пользователя для безопасности
 		await this.refreshToken.update(
@@ -514,5 +541,93 @@ export class UsersService {
 		});
 
 		return { message: 'Пароль успешно изменён' };
+	}
+
+	// Метод для очистки истёкших токенов
+	async cleanupExpiredTokens(): Promise<void> {
+		const now = new Date();
+
+		// Ищем записи с истёкшими токенами
+		const expiredTempData = await this.userTempDataRepository.findAll({
+			where: {
+				[Op.or]: [
+					{
+						emailVerificationExpiresAt: {
+							[Op.lt]: now
+						}
+					},
+					{
+						passwordResetExpiresAt: {
+							[Op.lt]: now
+						}
+					},
+					{
+						twoFactorExpiresAt: {
+							[Op.lt]: now
+						}
+					},
+					{
+						phoneVerificationExpiresAt: {
+							[Op.lt]: now
+						}
+					}
+				]
+			},
+			include: [{ model: Users }]
+		});
+
+		let cleanedCount = 0;
+
+		// Для каждой записи проверяем, нужно ли удалить пользователя
+		for (const tempData of expiredTempData) {
+			const user = tempData.user;
+			let shouldDeleteUser = false;
+
+			// Проверяем истёкшие токены подтверждения email
+			if (
+				tempData.emailVerificationExpiresAt &&
+				tempData.emailVerificationExpiresAt < now &&
+				!user.isEmailVerified
+			) {
+				shouldDeleteUser = true;
+			}
+
+			// Очищаем истёкшие токены
+			if (tempData.emailVerificationExpiresAt && tempData.emailVerificationExpiresAt < now) {
+				tempData.emailVerificationToken = null;
+				tempData.emailVerificationExpiresAt = null;
+			}
+			if (tempData.passwordResetExpiresAt && tempData.passwordResetExpiresAt < now) {
+				tempData.passwordResetToken = null;
+				tempData.passwordResetExpiresAt = null;
+			}
+			if (tempData.twoFactorExpiresAt && tempData.twoFactorExpiresAt < now) {
+				tempData.twoFactorCode = null;
+				tempData.twoFactorExpiresAt = null;
+			}
+			if (tempData.phoneVerificationExpiresAt && tempData.phoneVerificationExpiresAt < now) {
+				tempData.phoneVerificationCode = null;
+				tempData.phoneVerificationExpiresAt = null;
+			}
+
+			if (shouldDeleteUser) {
+				// Удаляем пользователя и его временные данные
+				await this.sequelize.transaction(async (transaction) => {
+					await this.userTempDataRepository.destroy({
+						where: { userId: user.id },
+						transaction
+					});
+					await user.destroy({ transaction });
+				});
+				console.log(`Пользователь ${user.email} удалён (не подтвердил email)`);
+			} else {
+				// Просто обновляем запись, очищая истёкшие токены
+				await tempData.save();
+			}
+
+			cleanedCount++;
+		}
+
+		console.log(`Очищено ${cleanedCount} записей с истёкшими токенами`);
 	}
 }
