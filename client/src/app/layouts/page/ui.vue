@@ -3,7 +3,7 @@
 		<v-navigation-drawer
 			v-model="drawer"
 			app
-			color="#123524"
+			color="surface"
 		>
 			<v-list>
 				<v-list-item
@@ -23,7 +23,7 @@
 
 		<v-app-bar
 			app
-			color="#123524"
+			color="surface"
 		>
 			<v-app-bar-nav-icon @click="drawer = !drawer">
 				<v-icon class="h-6 w-6">mdi-menu</v-icon>
@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-	import { ref, computed } from 'vue';
+	import { ref, computed, reactive } from 'vue';
 	import { useRouter } from 'vue-router';
 	import { useAppStore } from '@/app/app.store';
 
@@ -76,14 +76,14 @@
 		router.push(path);
 	};
 
-	const PAGES = [
+	const PAGES = reactive([
 		{
 			title: 'Главная страница',
 			path: '/',
 			icon: 'mdi-home',
 			visible: true
 		}
-	];
+	]);
 
 	const visiblePages = computed(() => PAGES.filter((page) => page.visible));
 

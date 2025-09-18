@@ -9,10 +9,45 @@ body {
 }
 
 .main {
-    background-color: #0b1d13;
-    color: #fff;
-    min-height: 100vh;
-  }
+	background-color: #0b1d13;
+	color: #fff;
+	min-height: 100vh;
+}
+
+:root {
+	/* Базовый фон всего сайта */
+	--color-background: #0b1d13;
+
+	/* Панели (app-bar, navigation-drawer, sidebar и т.п.) */
+	--color-surface: #123524;
+
+	/* Цвет карточек, модальных окон */
+	--color-modal: #1a3a29;
+
+	/* Цвет элементов меню (hover, выделение) */
+	--color-menu-hover: #1f4d35;
+
+	/* Акцент (кнопки, ссылки, активные состояния) */
+	--color-accent: #1db954;
+
+	/* Цвет границ и разделителей */
+	--color-border: #2a5440;
+
+	/* Основной текст */
+	--color-text: #ffffff;
+
+	/* Вторичный текст (подписи, неактивные элементы) */
+	--color-text-secondary: #b3b3b3;
+
+	/* Ошибки/критические уведомления */
+	--color-error: #e74c3c;
+
+	/* Успешные действия */
+	--color-success: #27ae60;
+
+	/* Предупреждения */
+	--color-warning: #f39c12;
+}
 
 .full-h-blocks {
 	@apply flex flex-col min-h-0 h-full;
