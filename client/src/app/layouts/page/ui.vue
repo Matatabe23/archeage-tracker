@@ -32,7 +32,16 @@
 			<span class="hidden md:block"> Пользователей онлайн: {{ onlineUsers }} </span>
 
 			<div class="flex gap-2 ml-auto mr-4 cursor-pointer">
-				<v-menu location="bottom">
+				<v-btn
+					v-if="!appStore.auth"
+					variant="tonal"
+					>Войти</v-btn
+				>
+
+				<v-menu
+					v-else
+					location="bottom"
+				>
 					<template v-slot:activator="{ props }">
 						<v-avatar
 							v-bind="props"
