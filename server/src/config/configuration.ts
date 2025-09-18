@@ -10,5 +10,7 @@ export default () => ({
 	dbHost: process.env.DB_HOST,
 	dbName: process.env.DB_NAME,
 	dbUser: process.env.DB_ROOT_USER,
-	dbPassword: process.env.DB_PASSWORD_USER
+	dbPassword: process.env.DB_PASSWORD_USER,
+	frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+	passwordResetUrl: process.env.PASSWORD_RESET_URL || 'http://localhost:3000/reset-password'
 });

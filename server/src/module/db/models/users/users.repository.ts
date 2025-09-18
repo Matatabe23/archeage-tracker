@@ -80,6 +80,12 @@ export class Users extends Model {
 	@Column({ allowNull: true })
 	emailVerificationExpiresAt: Date; // время истечения токена
 
+	@Column({ allowNull: true })
+	passwordResetToken: string; // токен для восстановления пароля
+
+	@Column({ allowNull: true })
+	passwordResetExpiresAt: Date; // время истечения токена восстановления пароля
+
 	// Связь с refresh токенами (один пользователь - много токенов)
 	@HasMany(() => RefreshToken, { foreignKey: 'userId', as: 'refreshTokens' })
 	refreshTokens: RefreshToken[];

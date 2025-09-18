@@ -24,7 +24,11 @@ import { AuthGuard } from 'src/guards/auth.guard';
 import { GetProfileDoc } from './decorators/get-profile.decorator';
 import { Roles } from 'src/decorators/roles.decorator';
 import { UpdateUserDto, UpdateUserRolesDto } from './dto/update-user.dto';
+import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
+import { ConfirmPasswordResetDto } from './dto/confirm-password-reset.dto';
 import { UpdateUserDoc, UpdateUserRolesDoc } from './decorators/update-user.decorator';
+import { RequestPasswordResetDoc } from './decorators/request-password-reset.decorator';
+import { ConfirmPasswordResetDoc } from './decorators/confirm-password-reset.decorator';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { EUserPermission } from 'src/types/permissions/users';
 @Controller('user')
@@ -42,6 +46,18 @@ export class UsersController {
 	async verifyEmail(@Query('token') token: string) {
 		await this.userService.confirmEmail(token);
 		return { message: 'Email успешно подтверждён' };
+	}
+
+	@Post('request-password-reset')
+	@RequestPasswordResetDoc()
+	async requestPasswordReset(@Body() dto: RequestPasswordResetDto) {
+		return this.userService.requestPasswordReset(dto);
+	}
+
+	@Post('confirm-password-reset')
+	@ConfirmPasswordResetDoc()
+	async confirmPasswordReset(@Body() dto: ConfirmPasswordResetDto) {
+		return this.userService.confirmPasswordReset(dto);
 	}
 
 	@Post('login')

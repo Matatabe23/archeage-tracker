@@ -16,6 +16,8 @@ import { TokenRepository } from 'src/module/service/token/token.repository';
 import { RefreshToken } from 'src/module/db/models/users/refresh-token.repository';
 import { LoginUserDto } from './dto/login.dto';
 import { UpdateUserDto, UpdateUserRolesDto } from './dto/update-user.dto';
+import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
+import { ConfirmPasswordResetDto } from './dto/confirm-password-reset.dto';
 import { Roles } from 'src/module/db/models/users/roles.repository';
 import { UserRoles } from 'src/module/db/models/users/user-roles.repository';
 import { NotFoundException } from '@nestjs/common';
@@ -100,6 +102,8 @@ export class UsersService {
 			delete userObj.passwordHash;
 			delete userObj.emailVerificationToken;
 			delete userObj.emailVerificationExpiresAt;
+			delete userObj.passwordResetToken;
+			delete userObj.passwordResetExpiresAt;
 
 			return userObj;
 		} catch (error) {
@@ -160,6 +164,8 @@ export class UsersService {
 		delete userObj.passwordHash;
 		delete userObj.emailVerificationToken;
 		delete userObj.emailVerificationExpiresAt;
+		delete userObj.passwordResetToken;
+		delete userObj.passwordResetExpiresAt;
 
 		// --- Создание токенов с ролями ---
 		const userRoles =
@@ -317,6 +323,8 @@ export class UsersService {
 		delete userObj.passwordHash;
 		delete userObj.emailVerificationToken;
 		delete userObj.emailVerificationExpiresAt;
+		delete userObj.passwordResetToken;
+		delete userObj.passwordResetExpiresAt;
 
 		return userObj;
 	}
@@ -403,5 +411,107 @@ export class UsersService {
 			message: 'Роли успешно назначены пользователю',
 			user: userWithRoles.get({ plain: true })
 		};
+	}
+
+	async requestPasswordReset(dto: RequestPasswordResetDto): Promise<{ message: string }> {
+		const { loginOrEmail, resetUrl } = dto;
+
+		// Ищем пользователя по email или имени
+		const user = await this.usersRepository.findOne({
+			where: {
+				[Op.or]: [{ email: loginOrEmail }, { name: loginOrEmail }]
+			}
+		});
+
+		if (!user) {
+			throw new BadRequestException('Пользователь с указанным email или именем не найден');
+		}
+
+		// Проверяем, что email подтверждён
+		if (!user.isEmailVerified) {
+			throw new BadRequestException('Email не подтверждён. Сначала подтвердите email');
+		}
+
+		// Генерируем токен для восстановления пароля
+		const token = randomBytes(32).toString('hex');
+		const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 минут
+
+		// Сохраняем токен в базе данных
+		user.passwordResetToken = token;
+		user.passwordResetExpiresAt = expiresAt;
+		await user.save();
+
+		// Определяем URL для восстановления
+		const baseUrl =
+			resetUrl ||
+			process.env.PASSWORD_RESET_URL ||
+			process.env.FRONTEND_URL + '/reset-password';
+		const resetLink = `${baseUrl}?token=${token}`;
+
+		// Отправляем email с ссылкой для восстановления
+		await this.mailRepository.sendMail({
+			to: user.email,
+			subject: 'Восстановление пароля',
+			html: `
+				<p>Здравствуйте, ${user.name}!</p>
+				<p>Вы запросили восстановление пароля для вашего аккаунта.</p>
+				<p>Перейдите по ссылке ниже, чтобы установить новый пароль:</p>
+				<a href="${resetLink}">Восстановить пароль</a>
+				<p>Ссылка действительна в течение 15 минут.</p>
+				<p>Если вы не запрашивали восстановление пароля, проигнорируйте это письмо.</p>
+			`
+		});
+
+		return { message: 'Ссылка для восстановления пароля отправлена на ваш email' };
+	}
+
+	async confirmPasswordReset(dto: ConfirmPasswordResetDto): Promise<{ message: string }> {
+		const { token, newPassword } = dto;
+
+		// Ищем пользователя по токену восстановления
+		const user = await this.usersRepository.findOne({
+			where: { passwordResetToken: token }
+		});
+
+		if (!user) {
+			throw new BadRequestException('Неверный токен восстановления');
+		}
+
+		// Проверяем, не истёк ли токен
+		if (user.passwordResetExpiresAt < new Date()) {
+			// Очищаем истёкший токен
+			user.passwordResetToken = null;
+			user.passwordResetExpiresAt = null;
+			await user.save();
+			throw new BadRequestException('Токен восстановления истёк. Запросите новую ссылку');
+		}
+
+		// Хешируем новый пароль
+		const hashPassword = await bcrypt.hash(newPassword, 10);
+
+		// Обновляем пароль и очищаем токен восстановления
+		user.passwordHash = hashPassword;
+		user.passwordResetToken = null;
+		user.passwordResetExpiresAt = null;
+		await user.save();
+
+		// Отзываем все refresh токены пользователя для безопасности
+		await this.refreshToken.update(
+			{ isRevoked: true, revokedAt: new Date(), revokedReason: 'Password reset' },
+			{ where: { userId: user.id, isRevoked: false } }
+		);
+
+		// Отправляем уведомление об успешном изменении пароля
+		await this.mailRepository.sendMail({
+			to: user.email,
+			subject: 'Пароль успешно изменён',
+			html: `
+				<p>Здравствуйте, ${user.name}!</p>
+				<p>Пароль для вашего аккаунта был успешно изменён.</p>
+				<p>Если это были не вы, немедленно свяжитесь с поддержкой.</p>
+			`
+		});
+
+		return { message: 'Пароль успешно изменён' };
 	}
 }
