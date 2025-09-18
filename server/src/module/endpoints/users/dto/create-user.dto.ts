@@ -54,4 +54,13 @@ export class CreateUserDto {
 	@IsOptional()
 	@IsString({ message: MUST_BE_STRING })
 	phone?: string;
+
+	@ApiProperty({
+		description: 'URL для подтверждения email',
+		example: 'https://example.com/verify-email',
+		required: false
+	})
+	@IsOptional()
+	@IsString({ message: MUST_BE_STRING })
+	verificationUrl?: string;
 }

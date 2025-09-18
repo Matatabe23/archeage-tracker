@@ -72,8 +72,9 @@ export class UsersService {
 				{ transaction }
 			);
 
-			// Ссылка для подтверждения
-			const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+			// Определяем URL для подтверждения email
+			const baseUrl = dto.verificationUrl || process.env.FRONTEND_URL + '/verify-email';
+			const verificationUrl = `${baseUrl}?token=${token}`;
 
 			await this.mailRepository.sendMail({
 				to: dto.email,

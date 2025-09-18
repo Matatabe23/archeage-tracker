@@ -7,7 +7,7 @@ export function CreateUserDoc(): MethodDecorator {
 		// Добавляем описание ручки
 		ApiOperation({
 			summary: 'Регистрация нового пользователя',
-			description: 'Создаёт нового пользователя и отправляет письмо для подтверждения email'
+			description: 'Создаёт нового пользователя и отправляет письмо для подтверждения email. Можно указать кастомный URL для подтверждения через параметр verificationUrl.'
 		})(target, propertyKey, descriptor);
 
 		ApiResponse({
