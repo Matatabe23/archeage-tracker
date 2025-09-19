@@ -7,8 +7,8 @@ export const createUser = async (values: { name: string, email: string, password
 }
 
 // Функция для авторизации пользователя
-export const login = async (name: string) => {
-    const { data } = await $host.get('/user/login', { params: { name } });
+export const login = async (value: {loginOrEmail: string, password: string}) => {
+    const { data } = await $host.post('/user/login', value);
     localStorage.setItem('accessToken', data.accessToken);
     localStorage.setItem('refreshToken', data.refreshToken);
     localStorage.setItem('userData', JSON.stringify(data.user));

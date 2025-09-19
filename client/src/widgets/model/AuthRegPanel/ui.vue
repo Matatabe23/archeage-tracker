@@ -87,7 +87,7 @@
 				<v-btn
 					text
 					@click="toggleMode"
-                    class="w-full md:w-min"
+					class="w-full md:w-min"
 				>
 					{{ isRegistering ? 'Уже есть аккаунт?' : 'Создать аккаунт' }}
 				</v-btn>
@@ -97,7 +97,7 @@
 					:disabled="isRegistering ? !registerValid : !loginValid"
 					:loading="isLoading"
 					@click="submit"
-                    class="w-full md:w-min"
+					class="w-full md:w-min"
 				>
 					{{ isRegistering ? 'Зарегистрироваться' : 'Войти' }}
 				</v-btn>
@@ -107,7 +107,7 @@
 </template>
 
 <script lang="ts" setup>
-	import { createUser } from '@/shared';
+	import { createUser, login } from '@/shared';
 	import { ref, reactive } from 'vue';
 	import { POSITION, useToast } from 'vue-toastification';
 
@@ -157,7 +157,7 @@
 	const submit = async () => {
 		try {
 			isLoading.value = true;
-			
+
 			if (isRegistering.value) {
 				const success = await registerFormRef.value.validate();
 				if (!success) return;
@@ -178,13 +178,16 @@
 						timeout: 10000
 					}
 				);
+				clear();
 				isOpen.value = false;
 			} else {
 				const success = await loginFormRef.value.validate();
 				if (!success) return;
-				
-				// TODO: Implement login logic
-				// console.log('Вход:', { login: form.login, password: form.password });
+
+				const result = await login({ loginOrEmail: form.login, password: form.password });
+
+				console.log(result);
+				clear();
 				isOpen.value = false;
 			}
 		} catch (e) {
