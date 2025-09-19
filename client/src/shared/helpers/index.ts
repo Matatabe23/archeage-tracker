@@ -12,14 +12,52 @@ export const bodyLock = (boolean: boolean) => {
 };
 
 export const getIpAddress = async (): Promise<string> => {
-    try {
-        const response = await fetch('https://api.ipify.org?format=json');
-        const data = await response.json();
-        return data.ip;
-    } catch (error) {
-        // В случае ошибки возвращаем значение по умолчанию
-        return 'unknown';
+    // Список API для получения IP (пробуем по очереди)
+    const apis = [
+        'https://api.ipify.org?format=json',
+        'https://ipapi.co/ip/',
+        'https://api.ip.sb/geoip',
+        'https://ipinfo.io/ip'
+    ];
+    
+    for (const apiUrl of apis) {
+        try {
+            const response = await fetch(apiUrl);
+            
+            if (!response.ok) {
+                continue; // Пробуем следующий API
+            }
+            
+            const data = await response.json();
+            
+            // Обработка для ipify.org
+            if (apiUrl.includes('ipify.org')) {
+                return data.ip;
+            }
+            
+            // Обработка для ipapi.co/ip/
+            if (apiUrl.includes('ipapi.co/ip/')) {
+                return data.trim();
+            }
+            
+            // Обработка для ip.sb
+            if (apiUrl.includes('ip.sb')) {
+                return data.ip;
+            }
+            
+            // Обработка для ipinfo.io/ip
+            if (apiUrl.includes('ipinfo.io/ip')) {
+                return data.trim();
+            }
+            
+        } catch (error) {
+            // Пробуем следующий API
+            continue;
+        }
     }
+    
+    // Если все API недоступны, возвращаем значение по умолчанию
+    return 'unknown';
 };
 
 // Функция для получения часового пояса
@@ -97,7 +135,7 @@ export const getDeviceInfo = async () => {
             }
         };
     } catch (error) {
-        console.error('Ошибка при получении информации об устройстве:', error);
+        // В случае ошибки возвращаем базовую информацию
         return {
             deviceName: 'unknown',
             deviceType: 'unknown',
@@ -160,22 +198,77 @@ const getOSInfo = (userAgent: string) => {
 const getLocationInfo = async (ipAddress: string) => {
     if (ipAddress === 'unknown') return null;
     
-    try {
-        const response = await fetch(`https://ipapi.co/${ipAddress}/json/`);
-        const data = await response.json();
-        
-        return {
-            country: data.country_name || null,
-            countryCode: data.country_code || null,
-            region: data.region || null,
-            city: data.city || null,
-            latitude: data.latitude || null,
-            longitude: data.longitude || null,
-            timezone: data.timezone || null,
-            isp: data.org || null,
-            asn: data.asn || null
-        };
-    } catch (error) {
-        return null;
+    // Список API для получения геолокации (пробуем по очереди)
+    const apis = [
+        `https://ip-api.com/json/${ipAddress}?fields=status,message,country,countryCode,region,regionName,city,lat,lon,timezone,isp,as,query`,
+        `https://ipapi.co/${ipAddress}/json/`,
+        `https://ipinfo.io/${ipAddress}/json`
+    ];
+    
+    for (const apiUrl of apis) {
+        try {
+            const response = await fetch(apiUrl);
+            
+            if (!response.ok) {
+                continue; // Пробуем следующий API
+            }
+            
+            const data = await response.json();
+            
+            // Обработка для ip-api.com
+            if (apiUrl.includes('ip-api.com')) {
+                if (data.status === 'success') {
+                    return {
+                        country: data.country || null,
+                        countryCode: data.countryCode || null,
+                        region: data.regionName || null,
+                        city: data.city || null,
+                        latitude: data.lat || null,
+                        longitude: data.lon || null,
+                        timezone: data.timezone || null,
+                        isp: data.isp || null,
+                        asn: data.as || null
+                    };
+                }
+            }
+            
+            // Обработка для ipapi.co
+            if (apiUrl.includes('ipapi.co')) {
+                return {
+                    country: data.country_name || null,
+                    countryCode: data.country_code || null,
+                    region: data.region || null,
+                    city: data.city || null,
+                    latitude: data.latitude || null,
+                    longitude: data.longitude || null,
+                    timezone: data.timezone || null,
+                    isp: data.org || null,
+                    asn: data.asn || null
+                };
+            }
+            
+            // Обработка для ipinfo.io
+            if (apiUrl.includes('ipinfo.io')) {
+                const [lat, lon] = data.loc ? data.loc.split(',') : [null, null];
+                return {
+                    country: data.country || null,
+                    countryCode: data.country || null,
+                    region: data.region || null,
+                    city: data.city || null,
+                    latitude: lat ? parseFloat(lat) : null,
+                    longitude: lon ? parseFloat(lon) : null,
+                    timezone: data.timezone || null,
+                    isp: data.org || null,
+                    asn: null
+                };
+            }
+            
+        } catch (error) {
+            // Пробуем следующий API
+            continue;
+        }
     }
+    
+    // Если все API недоступны, возвращаем null
+    return null;
 };
