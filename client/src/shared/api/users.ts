@@ -1,11 +1,17 @@
-import { $host,  } from '@/shared';
+import { $host, } from '@/shared';
 import { jwtDecode } from 'jwt-decode';
+
+export const register = async (values: { name: string, email: string, password: string, verificationUrl: string }) => {
+    await $host.post('/user/create-user', { values });
+
+    return 'Успешная регистрация';
+}
 
 // Функция для авторизации пользователя
 export const login = async (name: string) => {
-	const { data } = await $host.get('user/login', { params: { name } });
-	localStorage.setItem('accessToken', data.accessToken);
-	localStorage.setItem('refreshToken', data.refreshToken);
-	localStorage.setItem('userData', JSON.stringify(data.user));
-	return jwtDecode(data.accessToken);
+    const { data } = await $host.get('/user/login', { params: { name } });
+    localStorage.setItem('accessToken', data.accessToken);
+    localStorage.setItem('refreshToken', data.refreshToken);
+    localStorage.setItem('userData', JSON.stringify(data.user));
+    return jwtDecode(data.accessToken);
 };
