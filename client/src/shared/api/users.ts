@@ -2,17 +2,27 @@ import { $host, } from '@/shared';
 import { jwtDecode } from 'jwt-decode';
 
 export const createUser = async (values: { name: string, email: string, password: string, verificationUrl: string }) => {
-    await $host.post('/user/create-user', values );
+    await $host.post('/user/create-user', values);
     return 'Успешная регистрация';
 }
 
 // Функция для авторизации пользователя
 export const login = async (value: {
-    loginOrEmail: string, 
+    loginOrEmail: string,
     password: string,
     deviceInfo?: {
+        deviceName?: string;
+        deviceType?: string;
+        userAgent?: string;
         ipAddress?: string;
+        location?: string;
+        latitude?: number;
+        longitude?: number;
+        country?: string;
+        city?: string;
+        region?: string;
         timezone?: string;
+        metadata?: { [key: string]: any; };
     }
 }) => {
     const { data } = await $host.post('/user/login', value);
