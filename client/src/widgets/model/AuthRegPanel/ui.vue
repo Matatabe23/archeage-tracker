@@ -107,7 +107,7 @@
 </template>
 
 <script lang="ts" setup>
-	import { createUser, getIpAddress, getTimezone, login } from '@/shared';
+	import { createUser, getDeviceInfo, login } from '@/shared';
 	import { ref, reactive } from 'vue';
 	import { POSITION, useToast } from 'vue-toastification';
 
@@ -184,16 +184,25 @@
 				const success = await loginFormRef.value.validate();
 				if (!success) return;
 
-				// Получаем IP-адрес и часовой пояс
-				const ipAddress = await getIpAddress();
-				const timezone = getTimezone();
+				// Получаем полную информацию об устройстве
+				const deviceInfo = await getDeviceInfo();
 
 				await login({ 
 					loginOrEmail: form.login, 
 					password: form.password,
 					deviceInfo: {
-						ipAddress,
-						timezone
+						deviceName: deviceInfo.deviceName,
+						deviceType: deviceInfo.deviceType,
+						userAgent: deviceInfo.userAgent,
+						ipAddress: deviceInfo.ipAddress,
+						timezone: deviceInfo.timezone,
+						location: deviceInfo.locationInfo?.city ? 
+							`${deviceInfo.locationInfo.city}, ${deviceInfo.locationInfo.country}` : null,
+						latitude: deviceInfo.locationInfo?.latitude,
+						longitude: deviceInfo.locationInfo?.longitude,
+						country: deviceInfo.locationInfo?.country,
+						city: deviceInfo.locationInfo?.city,
+						region: deviceInfo.locationInfo?.region
 					}
 				});
 				clear();

@@ -31,3 +31,151 @@ export const getTimezone = (): string => {
         return 'UTC';
     }
 };
+
+// Функция для получения всех данных об устройстве
+export const getDeviceInfo = async () => {
+    try {
+        // Получаем IP-адрес
+        const ipAddress = await getIpAddress();
+        
+        // Получаем часовой пояс
+        const timezone = getTimezone();
+        
+        // Получаем User Agent
+        const userAgent = navigator.userAgent;
+        
+        // Определяем тип устройства
+        const deviceType = /Mobile|Android|iPhone|iPad/.test(userAgent) ? 'mobile' : 'desktop';
+        
+        // Получаем разрешение экрана
+        const screenResolution = `${screen.width}x${screen.height}`;
+        
+        // Получаем язык браузера
+        const language = navigator.language || navigator.languages?.[0] || 'unknown';
+        
+        // Получаем информацию о платформе
+        const platform = navigator.platform || 'unknown';
+        
+        // Получаем информацию о браузере
+        const browserInfo = getBrowserInfo(userAgent);
+        
+        // Получаем информацию о операционной системе
+        const osInfo = getOSInfo(userAgent);
+        
+        // Получаем информацию о геолокации (если доступна)
+        const locationInfo = await getLocationInfo(ipAddress);
+        
+        return {
+            deviceName: `${osInfo.name} ${osInfo.version}`,
+            deviceType,
+            userAgent,
+            ipAddress,
+            timezone,
+            language,
+            platform,
+            screenResolution,
+            browserInfo,
+            osInfo,
+            locationInfo,
+            metadata: {
+                screenWidth: screen.width,
+                screenHeight: screen.height,
+                colorDepth: screen.colorDepth,
+                pixelRatio: window.devicePixelRatio,
+                timezoneOffset: new Date().getTimezoneOffset(),
+                online: navigator.onLine,
+                cookieEnabled: navigator.cookieEnabled,
+                doNotTrack: navigator.doNotTrack,
+                hardwareConcurrency: navigator.hardwareConcurrency,
+                maxTouchPoints: navigator.maxTouchPoints,
+                vendor: navigator.vendor,
+                vendorSub: navigator.vendorSub,
+                productSub: navigator.productSub,
+                appName: navigator.appName,
+                appVersion: navigator.appVersion,
+                appCodeName: navigator.appCodeName
+            }
+        };
+    } catch (error) {
+        console.error('Ошибка при получении информации об устройстве:', error);
+        return {
+            deviceName: 'unknown',
+            deviceType: 'unknown',
+            userAgent: navigator.userAgent || 'unknown',
+            ipAddress: 'unknown',
+            timezone: 'UTC',
+            language: 'unknown',
+            platform: 'unknown',
+            screenResolution: 'unknown',
+            browserInfo: { name: 'unknown', version: 'unknown' },
+            osInfo: { name: 'unknown', version: 'unknown' },
+            locationInfo: null,
+            metadata: {}
+        };
+    }
+};
+
+// Функция для определения браузера
+const getBrowserInfo = (userAgent: string) => {
+    const browsers = [
+        { name: 'Chrome', regex: /Chrome\/(\d+\.\d+)/ },
+        { name: 'Firefox', regex: /Firefox\/(\d+\.\d+)/ },
+        { name: 'Safari', regex: /Safari\/(\d+\.\d+)/ },
+        { name: 'Edge', regex: /Edg\/(\d+\.\d+)/ },
+        { name: 'Opera', regex: /Opera\/(\d+\.\d+)/ },
+        { name: 'Internet Explorer', regex: /MSIE (\d+\.\d+)/ }
+    ];
+    
+    for (const browser of browsers) {
+        const match = userAgent.match(browser.regex);
+        if (match) {
+            return { name: browser.name, version: match[1] };
+        }
+    }
+    
+    return { name: 'unknown', version: 'unknown' };
+};
+
+// Функция для определения операционной системы
+const getOSInfo = (userAgent: string) => {
+    const osList = [
+        { name: 'Windows', regex: /Windows NT (\d+\.\d+)/ },
+        { name: 'macOS', regex: /Mac OS X (\d+[._]\d+)/ },
+        { name: 'Linux', regex: /Linux/ },
+        { name: 'Android', regex: /Android (\d+\.\d+)/ },
+        { name: 'iOS', regex: /OS (\d+[._]\d+)/ }
+    ];
+    
+    for (const os of osList) {
+        const match = userAgent.match(os.regex);
+        if (match) {
+            return { name: os.name, version: match[1].replace(/_/g, '.') };
+        }
+    }
+    
+    return { name: 'unknown', version: 'unknown' };
+};
+
+// Функция для получения информации о местоположении по IP
+const getLocationInfo = async (ipAddress: string) => {
+    if (ipAddress === 'unknown') return null;
+    
+    try {
+        const response = await fetch(`https://ipapi.co/${ipAddress}/json/`);
+        const data = await response.json();
+        
+        return {
+            country: data.country_name || null,
+            countryCode: data.country_code || null,
+            region: data.region || null,
+            city: data.city || null,
+            latitude: data.latitude || null,
+            longitude: data.longitude || null,
+            timezone: data.timezone || null,
+            isp: data.org || null,
+            asn: data.asn || null
+        };
+    } catch (error) {
+        return null;
+    }
+};
