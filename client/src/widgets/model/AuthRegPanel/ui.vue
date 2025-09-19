@@ -94,6 +94,7 @@
 				<v-btn
 					color="primary"
 					:disabled="isRegistering ? !registerValid : !loginValid"
+					:loading="isLoading"
 					@click="submit"
 				>
 					{{ isRegistering ? 'Зарегистрироваться' : 'Войти' }}
@@ -105,7 +106,6 @@
 
 <script lang="ts" setup>
 	import { createUser } from '@/shared';
-	import { register } from 'module';
 	import { ref, reactive } from 'vue';
 	import { POSITION, useToast } from 'vue-toastification';
 
@@ -114,6 +114,7 @@
 	const isOpen = defineModel<boolean>('isOpen');
 	const isRegistering = ref(false);
 	const showPassword = ref(false);
+	const isLoading = ref(false);
 
 	const registerValid = ref(false);
 	const loginValid = ref(false);
@@ -151,41 +152,46 @@
 		clear();
 	}
 
-	const submit = () => {
+	const submit = async () => {
 		try {
+			isLoading.value = true;
+			
 			if (isRegistering.value) {
-				registerFormRef.value.validate().then(async (success: boolean) => {
-					if (!success) return;
+				const success = await registerFormRef.value.validate();
+				if (!success) return;
 
-					if (form.password !== form.confirmPassword) return;
+				if (form.password !== form.confirmPassword) return;
 
-					await createUser({
-						name: form.name,
-						email: form.email,
-						password: form.password,
-						verificationUrl: import.meta.env.VITE_APP_FRONTEND_API_URL
-					});
-
-					toast.success(
-						'Успешная регистрация! Письмо отправлено на почту. Ссылка действует 15 минут.',
-						{
-							position: POSITION.BOTTOM_RIGHT,
-							timeout: 10000
-						}
-					);
-					isOpen.value = false;
+				await createUser({
+					name: form.name,
+					email: form.email,
+					password: form.password,
+					verificationUrl: `${import.meta.env.VITE_APP_FRONTEND_API_URL}/verify-email`
 				});
+
+				toast.success(
+					'Успешная регистрация! Письмо отправлено на почту. Ссылка действует 15 минут.',
+					{
+						position: POSITION.BOTTOM_RIGHT,
+						timeout: 10000
+					}
+				);
+				isOpen.value = false;
 			} else {
-				loginFormRef.value.validate().then((success: boolean) => {
-					if (!success) return;
-					console.log('Вход:', { login: form.login, password: form.password });
-					isOpen.value = false;
-				});
+				const success = await loginFormRef.value.validate();
+				if (!success) return;
+				
+				// TODO: Implement login logic
+				// console.log('Вход:', { login: form.login, password: form.password });
+				isOpen.value = false;
 			}
 		} catch (e) {
-			//
+			toast.error('Произошла ошибка при выполнении запроса', {
+				position: POSITION.BOTTOM_RIGHT,
+				timeout: 5000
+			});
 		} finally {
-			// clear();
+			isLoading.value = false;
 		}
 	};
 </script>
