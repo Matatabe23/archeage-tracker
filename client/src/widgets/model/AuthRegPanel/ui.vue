@@ -1,0 +1,165 @@
+<template>
+	<v-dialog
+		v-model="isOpen"
+		max-width="500"
+	>
+		<v-card>
+			<v-card-title class="text-h5">
+				{{ isRegistering ? 'Регистрация' : 'Вход' }}
+			</v-card-title>
+
+			<v-card-text>
+				<!-- Форма регистрации -->
+				<v-form
+					v-if="isRegistering"
+					ref="registerFormRef"
+					v-model="registerValid"
+					class="flex flex-col gap-3"
+				>
+					<v-text-field
+						v-model="form.name"
+						label="Login пользователя"
+						:rules="[rules.required]"
+						required
+						variant="outlined"
+					/>
+					<v-text-field
+						v-model="form.email"
+						label="Email"
+						:rules="[rules.required, rules.email]"
+						required
+						variant="outlined"
+					/>
+					<v-text-field
+						v-model="form.password"
+						label="Пароль"
+						:type="showPassword ? 'text' : 'password'"
+						:append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+						@click:append-inner="showPassword = !showPassword"
+						:rules="[rules.required, rules.min]"
+						required
+						variant="outlined"
+					/>
+					<v-text-field
+						v-model="form.confirmPassword"
+						label="Подтвердите пароль"
+						:type="showPassword ? 'text' : 'password'"
+						:rules="[rules.required, rules.matchPassword]"
+						required
+						variant="outlined"
+					/>
+				</v-form>
+
+				<!-- Форма авторизации -->
+				<v-form
+					v-else
+					ref="loginFormRef"
+					v-model="loginValid"
+					class="flex flex-col gap-3"
+				>
+					<v-text-field
+						v-model="form.login"
+						label="Email или login пользователя"
+						:rules="[rules.required]"
+						required
+						variant="outlined"
+					/>
+					<v-text-field
+						v-model="form.password"
+						label="Пароль"
+						:type="showPassword ? 'text' : 'password'"
+						:append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+						@click:append-inner="showPassword = !showPassword"
+						:rules="[rules.required, rules.min]"
+						required
+						variant="outlined"
+					/>
+				</v-form>
+			</v-card-text>
+
+			<v-card-actions>
+				<v-btn
+					text
+					@click="toggleMode"
+				>
+					{{ isRegistering ? 'Уже есть аккаунт?' : 'Создать аккаунт' }}
+				</v-btn>
+				<v-spacer></v-spacer>
+				<v-btn
+					color="primary"
+					:disabled="isRegistering ? !registerValid : !loginValid"
+					@click="submit"
+				>
+					{{ isRegistering ? 'Зарегистрироваться' : 'Войти' }}
+				</v-btn>
+			</v-card-actions>
+		</v-card>
+	</v-dialog>
+</template>
+
+<script lang="ts" setup>
+	import { ref, reactive } from 'vue';
+	import { POSITION, useToast } from 'vue-toastification';
+
+	const toast = useToast();
+
+	const isOpen = defineModel<boolean>('isOpen');
+	const isRegistering = ref(false);
+	const showPassword = ref(false);
+
+	const registerValid = ref(false);
+	const loginValid = ref(false);
+
+	const registerFormRef = ref();
+	const loginFormRef = ref();
+
+	const form = reactive({
+		name: '',
+		login: '',
+		email: '',
+		password: '',
+		confirmPassword: ''
+	});
+
+	const rules = {
+		required: (v: string) => !!v || 'Поле обязательно',
+		email: (v: string) => /.+@.+\..+/.test(v) || 'Неверный email',
+		min: (v: string) => v.length >= 6 || 'Минимум 6 символов',
+		matchPassword: (v: string) => v === form.password || 'Пароли не совпадают'
+	};
+
+	function toggleMode() {
+		isRegistering.value = !isRegistering.value;
+		form.name = '';
+		form.login = '';
+		form.email = '';
+		form.password = '';
+		form.confirmPassword = '';
+		registerValid.value = false;
+		loginValid.value = false;
+	}
+
+	function submit() {
+		if (isRegistering.value) {
+			registerFormRef.value.validate().then((success: boolean) => {
+				if (!success) return;
+				console.log('Регистрация:', { ...form });
+
+				toast.success(
+					'Успешная регистрация! Письмо отправлено на почту. Ссылка действует 15 минут.',
+					{
+						position: POSITION.BOTTOM_RIGHT,
+						timeout: 10000
+					}
+				);
+				isOpen.value = false;
+			});
+		} else {
+			loginFormRef.value.validate().then((success: boolean) => {
+				if (!success) return;
+				console.log('Вход:', { login: form.login, password: form.password });
+				isOpen.value = false;
+			});
+		}
+	}
+</script>

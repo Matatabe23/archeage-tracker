@@ -29,12 +29,11 @@
 				<v-icon class="h-6 w-6">mdi-menu</v-icon>
 			</v-app-bar-nav-icon>
 
-			<span class="hidden md:block"> Пользователей онлайн: {{ onlineUsers }} </span>
-
 			<div class="flex gap-2 ml-auto mr-4 cursor-pointer">
 				<v-btn
 					v-if="!appStore.auth"
 					variant="tonal"
+					@click="isAuthReg = true"
 					>Войти</v-btn
 				>
 
@@ -66,7 +65,7 @@
 			<slot></slot>
 		</v-main>
 
-		<!-- <PublishPostsPanel v-model:isOpen="isPublishPanel" /> -->
+		<AuthRegPanel v-model:isOpen="isAuthReg" />
 	</v-app>
 </template>
 
@@ -74,12 +73,13 @@
 	import { ref, computed, reactive } from 'vue';
 	import { useRouter } from 'vue-router';
 	import { useAppStore } from '@/app/app.store';
+	import { AuthRegPanel } from '@/widgets';
 
 	const router = useRouter();
 	const appStore = useAppStore();
 
 	const drawer = ref(false);
-	const onlineUsers = ref(1);
+	const isAuthReg = ref(false);
 
 	const goTo = (path: string) => {
 		router.push(path);
