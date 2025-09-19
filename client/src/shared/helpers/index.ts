@@ -10,3 +10,24 @@ export const bodyLock = (boolean: boolean) => {
         document.body.style.paddingRight = `5px`;
     }
 };
+
+export const getIpAddress = async (): Promise<string> => {
+    try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        return data.ip;
+    } catch (error) {
+        // В случае ошибки возвращаем значение по умолчанию
+        return 'unknown';
+    }
+};
+
+// Функция для получения часового пояса
+export const getTimezone = (): string => {
+    try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch (error) {
+        // В случае ошибки возвращаем UTC
+        return 'UTC';
+    }
+};
