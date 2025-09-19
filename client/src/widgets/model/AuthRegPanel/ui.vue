@@ -149,7 +149,7 @@
 		clear();
 	}
 
-	function submit() {
+	const submit = async () => {
 		if (isRegistering.value) {
 			registerFormRef.value.validate().then((success: boolean) => {
 				if (!success) return;
@@ -173,5 +173,5 @@
 		}
 
 		clear();
-	}
+	};
 </script>
