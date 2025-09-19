@@ -83,10 +83,11 @@
 				</v-form>
 			</v-card-text>
 
-			<v-card-actions>
+			<v-card-actions class="flex flex-col-reverse md:flex-row">
 				<v-btn
 					text
 					@click="toggleMode"
+                    class="w-full md:w-min"
 				>
 					{{ isRegistering ? 'Уже есть аккаунт?' : 'Создать аккаунт' }}
 				</v-btn>
@@ -96,6 +97,7 @@
 					:disabled="isRegistering ? !registerValid : !loginValid"
 					:loading="isLoading"
 					@click="submit"
+                    class="w-full md:w-min"
 				>
 					{{ isRegistering ? 'Зарегистрироваться' : 'Войти' }}
 				</v-btn>
