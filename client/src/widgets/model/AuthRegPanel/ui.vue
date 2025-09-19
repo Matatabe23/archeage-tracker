@@ -22,6 +22,7 @@
 						:rules="[rules.required]"
 						required
 						variant="outlined"
+						prepend-inner-icon="mdi-account"
 					/>
 					<v-text-field
 						v-model="form.email"
@@ -29,6 +30,7 @@
 						:rules="[rules.required, rules.email]"
 						required
 						variant="outlined"
+						prepend-inner-icon="mdi-email"
 					/>
 					<v-text-field
 						v-model="form.password"
@@ -39,6 +41,7 @@
 						:rules="[rules.required, rules.min]"
 						required
 						variant="outlined"
+						prepend-inner-icon="mdi-lock"
 					/>
 					<v-text-field
 						v-model="form.confirmPassword"
@@ -47,6 +50,7 @@
 						:rules="[rules.required, rules.matchPassword]"
 						required
 						variant="outlined"
+						prepend-inner-icon="mdi-lock"
 					/>
 				</v-form>
 
@@ -63,6 +67,7 @@
 						:rules="[rules.required]"
 						required
 						variant="outlined"
+						prepend-inner-icon="mdi-account"
 					/>
 					<v-text-field
 						v-model="form.password"
@@ -73,6 +78,7 @@
 						:rules="[rules.required, rules.min]"
 						required
 						variant="outlined"
+						prepend-inner-icon="mdi-lock"
 					/>
 				</v-form>
 			</v-card-text>
@@ -128,8 +134,7 @@
 		matchPassword: (v: string) => v === form.password || 'Пароли не совпадают'
 	};
 
-	function toggleMode() {
-		isRegistering.value = !isRegistering.value;
+	const clear = () => {
 		form.name = '';
 		form.login = '';
 		form.email = '';
@@ -137,6 +142,11 @@
 		form.confirmPassword = '';
 		registerValid.value = false;
 		loginValid.value = false;
+	};
+
+	function toggleMode() {
+		isRegistering.value = !isRegistering.value;
+		clear();
 	}
 
 	function submit() {
@@ -161,5 +171,7 @@
 				isOpen.value = false;
 			});
 		}
+
+		clear();
 	}
 </script>
