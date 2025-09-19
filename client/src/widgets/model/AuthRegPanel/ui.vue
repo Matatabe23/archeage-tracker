@@ -104,6 +104,8 @@
 </template>
 
 <script lang="ts" setup>
+	import { createUser } from '@/shared';
+	import { register } from 'module';
 	import { ref, reactive } from 'vue';
 	import { POSITION, useToast } from 'vue-toastification';
 
@@ -149,29 +151,41 @@
 		clear();
 	}
 
-	const submit = async () => {
-		if (isRegistering.value) {
-			registerFormRef.value.validate().then((success: boolean) => {
-				if (!success) return;
-				console.log('Регистрация:', { ...form });
+	const submit = () => {
+		try {
+			if (isRegistering.value) {
+				registerFormRef.value.validate().then(async (success: boolean) => {
+					if (!success) return;
 
-				toast.success(
-					'Успешная регистрация! Письмо отправлено на почту. Ссылка действует 15 минут.',
-					{
-						position: POSITION.BOTTOM_RIGHT,
-						timeout: 10000
-					}
-				);
-				isOpen.value = false;
-			});
-		} else {
-			loginFormRef.value.validate().then((success: boolean) => {
-				if (!success) return;
-				console.log('Вход:', { login: form.login, password: form.password });
-				isOpen.value = false;
-			});
+					if (form.password !== form.confirmPassword) return;
+
+					await createUser({
+						name: form.name,
+						email: form.email,
+						password: form.password,
+						verificationUrl: import.meta.env.VITE_APP_FRONTEND_API_URL
+					});
+
+					toast.success(
+						'Успешная регистрация! Письмо отправлено на почту. Ссылка действует 15 минут.',
+						{
+							position: POSITION.BOTTOM_RIGHT,
+							timeout: 10000
+						}
+					);
+					isOpen.value = false;
+				});
+			} else {
+				loginFormRef.value.validate().then((success: boolean) => {
+					if (!success) return;
+					console.log('Вход:', { login: form.login, password: form.password });
+					isOpen.value = false;
+				});
+			}
+		} catch (e) {
+			//
+		} finally {
+			// clear();
 		}
-
-		clear();
 	};
 </script>

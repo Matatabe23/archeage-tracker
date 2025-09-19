@@ -1,7 +1,7 @@
 import { $host, } from '@/shared';
 import { jwtDecode } from 'jwt-decode';
 
-export const register = async (values: { name: string, email: string, password: string, verificationUrl: string }) => {
+export const createUser = async (values: { name: string, email: string, password: string, verificationUrl: string }) => {
     await $host.post('/user/create-user', { values });
     return 'Успешная регистрация';
 }
