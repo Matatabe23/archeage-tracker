@@ -107,11 +107,13 @@
 </template>
 
 <script lang="ts" setup>
+	import { useAppStore } from '@/app/app.store';
 	import { createUser, getDeviceInfo, login } from '@/shared';
 	import { ref, reactive } from 'vue';
 	import { POSITION, useToast } from 'vue-toastification';
 
 	const toast = useToast();
+	const appStore = useAppStore();
 
 	const isOpen = defineModel<boolean>('isOpen');
 	const isRegistering = ref(false);
@@ -187,8 +189,8 @@
 				// Получаем полную информацию об устройстве
 				const deviceInfo = await getDeviceInfo();
 
-				await login({ 
-					loginOrEmail: form.login, 
+				const result = await login({
+					loginOrEmail: form.login,
 					password: form.password,
 					deviceInfo: {
 						deviceName: deviceInfo.deviceName,
@@ -196,8 +198,9 @@
 						userAgent: deviceInfo.userAgent,
 						ipAddress: deviceInfo.ipAddress,
 						timezone: deviceInfo.timezone,
-						location: deviceInfo.locationInfo?.city ? 
-							`${deviceInfo.locationInfo.city}, ${deviceInfo.locationInfo.country}` : null,
+						location: deviceInfo.locationInfo?.city
+							? `${deviceInfo.locationInfo.city}, ${deviceInfo.locationInfo.country}`
+							: null,
 						latitude: deviceInfo.locationInfo?.latitude,
 						longitude: deviceInfo.locationInfo?.longitude,
 						country: deviceInfo.locationInfo?.country,
@@ -205,6 +208,10 @@
 						region: deviceInfo.locationInfo?.region
 					}
 				});
+
+                appStore.auth = true
+                appStore.userData = result.user
+
 				clear();
 				isOpen.value = false;
 			}

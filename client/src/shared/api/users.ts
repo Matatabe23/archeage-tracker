@@ -29,7 +29,7 @@ export const login = async (value: {
     localStorage.setItem('accessToken', data.accessToken);
     localStorage.setItem('refreshToken', data.refreshToken);
     localStorage.setItem('userData', JSON.stringify(data.user));
-    return jwtDecode(data.accessToken);
+    return data;
 };
 
 export const verifyEmail = async (token: string) => {
