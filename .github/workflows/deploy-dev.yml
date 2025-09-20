@@ -1,8 +1,8 @@
-name: Deploy to server
+name: Deploy Dev
 
 on:
   push:
-    branches: [main]
+    branches: [dev]
 
 jobs:
   deploy:
@@ -22,4 +22,4 @@ jobs:
 
       - name: Run deployment script
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} 'bash /var/www/archeage-tracker/deploy.sh'
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} 'bash /var/www/archeage-tracker/dev/deploy.sh'
