@@ -334,7 +334,15 @@ export class UsersService {
 	}
 
 	async getProfile(userId: number): Promise<any> {
-		const user = await this.usersRepository.findByPk(userId);
+		const user = await this.usersRepository.findByPk(userId, {
+			include: [
+				{
+					model: this.rolesRepository,
+					as: 'roles',
+					through: { attributes: [] } // Исключаем промежуточную таблицу UserRoles
+				}
+			]
+		});
 
 		if (!user) {
 			throw new UnauthorizedException('Пользователь не найден');

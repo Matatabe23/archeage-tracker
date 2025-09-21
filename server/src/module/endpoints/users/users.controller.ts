@@ -105,4 +105,12 @@ export class UsersController {
 	async updateUserRoles(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserRolesDto) {
 		return this.userService.updateUserRoles(id, dto);
 	}
+
+	@Get('check-auth')
+	@ApiBearerAuth('access-token')
+	@UseGuards(AuthGuard)
+	@GetProfileDoc()
+	async checkAuth(@Req() req: any) {
+		return this.userService.getProfile(req.user.sub);
+	}
 }
