@@ -41,3 +41,8 @@ export const checkAuth = async () => {
     const result = await $autHost.get('/user/check-auth',);
     return result.data;
 }
+
+export const logout = async (refreshToken: string) => {
+    const result = await $autHost.post('/user/logout', { refreshToken });
+    return result.data;
+}

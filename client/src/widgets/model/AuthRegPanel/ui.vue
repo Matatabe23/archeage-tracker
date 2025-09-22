@@ -15,6 +15,7 @@
 					ref="registerFormRef"
 					v-model="registerValid"
 					class="flex flex-col gap-3"
+					@keyup.enter="submit"
 				>
 					<v-text-field
 						v-model="form.name"
@@ -60,6 +61,7 @@
 					ref="loginFormRef"
 					v-model="loginValid"
 					class="flex flex-col gap-3"
+					@keyup.enter="submit"
 				>
 					<v-text-field
 						v-model="form.login"

@@ -89,7 +89,7 @@
 	import { useRouter } from 'vue-router';
 	import { useAppStore } from '@/app/app.store';
 	import { AuthRegPanel } from '@/widgets';
-	import { checkAuth } from '@/shared';
+	import { checkAuth, logout } from '@/shared';
 
 	const router = useRouter();
 	const appStore = useAppStore();
@@ -114,6 +114,7 @@
 	const visiblePages = computed(() => PAGES.filter((page) => page.visible));
 
 	const exit = async () => {
+        await logout(localStorage.getItem('refreshToken'))
 		localStorage.removeItem('user');
 		localStorage.removeItem('accessToken');
 		localStorage.removeItem('refreshToken');
