@@ -1,8 +1,8 @@
 <template>
-	<div class="min-h-screen bg-gradient-to-br from-green-950 to-green-900 flex items-center justify-center p-4">
-		<v-container class="max-w-4xl">
-			<v-card class="pa-6" elevation="8">
-				<v-card-title class="text-h4 text-center mb-6 text-primary">
+	<div class="terms-privacy-container">
+		<v-container class="terms-container" fluid>
+			<v-card class="terms-card" elevation="8">
+				<v-card-title class="terms-title">
 					Правовая информация
 				</v-card-title>
 				
@@ -10,22 +10,23 @@
 					v-model="activeTab"
 					centered
 					color="primary"
-					class="mb-6"
+					class="terms-tabs"
+					variant="outlined"
 				>
-					<v-tab value="privacy">
-						<v-icon class="mr-2">mdi-shield-account</v-icon>
-						Политика конфиденциальности
+					<v-tab value="privacy" class="terms-tab">
+						<v-icon class="mr-1">mdi-shield-account</v-icon>
+						<span class="tab-text">Политика</span>
 					</v-tab>
-					<v-tab value="terms">
-						<v-icon class="mr-2">mdi-file-document</v-icon>
-						Пользовательское соглашение
+					<v-tab value="terms" class="terms-tab">
+						<v-icon class="mr-1">mdi-file-document</v-icon>
+						<span class="tab-text">Соглашение</span>
 					</v-tab>
 				</v-tabs>
 
-				<v-window v-model="activeTab">
+				<v-window v-model="activeTab" class="terms-window">
 					<!-- Политика конфиденциальности -->
 					<v-window-item value="privacy">
-						<v-card-text class="pa-0">
+						<v-card-text class="terms-content">
 							<div class="text-h5 mb-4 text-primary">
 								Политика конфиденциальности
 							</div>
@@ -153,7 +154,7 @@
 
 					<!-- Пользовательское соглашение -->
 					<v-window-item value="terms">
-						<v-card-text class="pa-0">
+						<v-card-text class="terms-content">
 							<div class="text-h5 mb-4 text-primary">
 								Пользовательское соглашение
 							</div>
@@ -308,34 +309,158 @@ const activeTab = ref('privacy')
 </script>
 
 <style scoped>
-.v-card {
-	border-radius: 16px;
+.terms-privacy-container {
+	min-height: 100vh;
+	background: linear-gradient(135deg, #0b1d13 0%, #123524 100%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+	overflow: hidden;
 }
 
-.v-tabs {
+.terms-container {
+	max-width: 1200px;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.terms-card {
+	border-radius: 20px;
+	width: 100%;
+	max-width: 1000px;
+	max-height: 90vh;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.terms-title {
+	text-align: center;
+	font-size: 2rem;
+	font-weight: 600;
+	padding: 24px 24px 16px 24px;
+	background: linear-gradient(45deg, #1db954, #27ae60);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+.terms-tabs {
+	margin: 0 24px 16px 24px;
 	border-radius: 12px;
+	background: rgba(255, 255, 255, 0.05);
+	backdrop-filter: blur(10px);
 }
 
-.v-window-item {
+.terms-tab {
+	font-weight: 500;
+	text-transform: none;
+	min-width: 120px;
+}
+
+.tab-text {
+	font-size: 0.9rem;
+}
+
+.terms-window {
+	flex: 1;
+	overflow: hidden;
+}
+
+.terms-content {
+	padding: 0 24px 24px 24px;
+	height: 100%;
 	overflow-y: auto;
-	max-height: 70vh;
+	overflow-x: hidden;
 }
 
+.terms-content::-webkit-scrollbar {
+	width: 6px;
+}
+
+.terms-content::-webkit-scrollbar-track {
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 3px;
+}
+
+.terms-content::-webkit-scrollbar-thumb {
+	background: #1db954;
+	border-radius: 3px;
+}
+
+.terms-content::-webkit-scrollbar-thumb:hover {
+	background: #27ae60;
+}
+
+/* Планшеты */
+@media (max-width: 1024px) {
+	.terms-privacy-container {
+		padding: 12px;
+	}
+	
+	.terms-card {
+		max-height: 95vh;
+	}
+	
+	.terms-title {
+		font-size: 1.75rem;
+		padding: 20px 20px 12px 20px;
+	}
+	
+	.terms-tabs {
+		margin: 0 20px 12px 20px;
+	}
+	
+	.terms-content {
+		padding: 0 20px 20px 20px;
+	}
+}
+
+/* Мобильные устройства */
 @media (max-width: 768px) {
-	.v-container {
+	.terms-privacy-container {
 		padding: 8px;
+		align-items: flex-start;
+		padding-top: 20px;
 	}
 	
-	.v-card {
-		padding: 16px !important;
+	.terms-container {
+		height: auto;
+		min-height: calc(100vh - 40px);
 	}
 	
-	.v-window-item {
-		max-height: 60vh;
+	.terms-card {
+		max-height: none;
+		height: auto;
+		min-height: calc(100vh - 40px);
 	}
 	
-	.text-h4 {
-		font-size: 1.5rem !important;
+	.terms-title {
+		font-size: 1.5rem;
+		padding: 16px 16px 8px 16px;
+	}
+	
+	.terms-tabs {
+		margin: 0 16px 8px 16px;
+	}
+	
+	.terms-tab {
+		min-width: 100px;
+		font-size: 0.85rem;
+		padding: 8px 12px;
+	}
+	
+	.tab-text {
+		font-size: 0.8rem;
+	}
+	
+	.terms-content {
+		padding: 0 16px 16px 16px;
+		flex: 1;
 	}
 	
 	.text-h5 {
@@ -345,20 +470,103 @@ const activeTab = ref('privacy')
 	.text-h6 {
 		font-size: 1.1rem !important;
 	}
+	
+	.text-body-1 {
+		font-size: 0.9rem !important;
+	}
 }
 
+/* Маленькие мобильные устройства */
 @media (max-width: 480px) {
-	.v-card {
-		padding: 12px !important;
+	.terms-privacy-container {
+		padding: 4px;
+		padding-top: 16px;
 	}
 	
-	.v-tab {
-		font-size: 0.875rem !important;
-		padding: 8px 12px !important;
+	.terms-container {
+		min-height: calc(100vh - 32px);
+	}
+	
+	.terms-card {
+		min-height: calc(100vh - 32px);
+		border-radius: 16px;
+	}
+	
+	.terms-title {
+		font-size: 1.25rem;
+		padding: 12px 12px 6px 12px;
+	}
+	
+	.terms-tabs {
+		margin: 0 12px 6px 12px;
+	}
+	
+	.terms-tab {
+		min-width: 80px;
+		font-size: 0.8rem;
+		padding: 6px 8px;
+	}
+	
+	.tab-text {
+		font-size: 0.75rem;
+	}
+	
+	.terms-content {
+		padding: 0 12px 12px 12px;
+	}
+	
+	.text-h5 {
+		font-size: 1.1rem !important;
+	}
+	
+	.text-h6 {
+		font-size: 1rem !important;
+	}
+	
+	.text-body-1 {
+		font-size: 0.85rem !important;
 	}
 	
 	.v-icon {
-		font-size: 1.2rem !important;
+		font-size: 1.1rem !important;
+	}
+	
+	ul {
+		padding-left: 16px !important;
+	}
+	
+	li {
+		margin-bottom: 4px !important;
+		font-size: 0.85rem;
+	}
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 360px) {
+	.terms-title {
+		font-size: 1.1rem;
+	}
+	
+	.terms-tab {
+		min-width: 70px;
+		font-size: 0.75rem;
+		padding: 4px 6px;
+	}
+	
+	.tab-text {
+		font-size: 0.7rem;
+	}
+	
+	.text-h5 {
+		font-size: 1rem !important;
+	}
+	
+	.text-h6 {
+		font-size: 0.95rem !important;
+	}
+	
+	.text-body-1 {
+		font-size: 0.8rem !important;
 	}
 }
 </style>
