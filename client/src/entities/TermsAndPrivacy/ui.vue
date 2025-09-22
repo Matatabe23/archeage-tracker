@@ -369,13 +369,16 @@ const activeTab = ref('privacy')
 .terms-window {
 	flex: 1;
 	overflow: hidden;
+	display: flex;
+	flex-direction: column;
 }
 
 .terms-content {
 	padding: 0 24px 24px 24px;
-	height: 100%;
+	flex: 1;
 	overflow-y: auto;
 	overflow-x: hidden;
+	max-height: calc(90vh - 200px);
 }
 
 .terms-content::-webkit-scrollbar {
@@ -417,6 +420,7 @@ const activeTab = ref('privacy')
 	
 	.terms-content {
 		padding: 0 20px 20px 20px;
+		max-height: calc(95vh - 180px);
 	}
 }
 
@@ -461,6 +465,7 @@ const activeTab = ref('privacy')
 	.terms-content {
 		padding: 0 16px 16px 16px;
 		flex: 1;
+		max-height: calc(100vh - 160px);
 	}
 	
 	.text-h5 {
@@ -513,6 +518,7 @@ const activeTab = ref('privacy')
 	
 	.terms-content {
 		padding: 0 12px 12px 12px;
+		max-height: calc(100vh - 140px);
 	}
 	
 	.text-h5 {
