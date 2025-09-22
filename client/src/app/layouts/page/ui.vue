@@ -44,7 +44,7 @@
 					<template v-slot:activator="{ props }">
 						<v-avatar
 							v-bind="props"
-							:image="'https://api.dicebear.com/9.x/bottts/svg'"
+							:image="'images/defaultAvatar.jpg'"
 						></v-avatar>
 					</template>
 
@@ -70,10 +70,11 @@
 </template>
 
 <script setup lang="ts">
-	import { ref, computed, reactive } from 'vue';
+	import { ref, computed, reactive, onMounted } from 'vue';
 	import { useRouter } from 'vue-router';
 	import { useAppStore } from '@/app/app.store';
 	import { AuthRegPanel } from '@/widgets';
+import { checkAuth } from '@/shared';
 
 	const router = useRouter();
 	const appStore = useAppStore();
@@ -107,11 +108,24 @@
 	const MENU_LIST = [
 		{
 			title: 'Профиль',
-			function: () => router.push('/profile')
+			function: () => {
+				// Profile page not implemented yet
+			}
 		},
 		{
 			title: 'Выйти',
 			function: exit
 		}
 	];
+
+    onMounted(async () => {
+        try {
+            const res = await checkAuth()
+            appStore.auth = true
+            appStore.userData = res
+        } catch (error) {
+            appStore.auth = false
+            appStore.userData = null
+        }
+    })
 </script>

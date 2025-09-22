@@ -1,4 +1,4 @@
-import { $host, } from '@/shared';
+import { $host, $autHost } from '@/shared';
 import { jwtDecode } from 'jwt-decode';
 
 export const createUser = async (values: { name: string, email: string, password: string, verificationUrl: string }) => {
@@ -35,4 +35,9 @@ export const login = async (value: {
 export const verifyEmail = async (token: string) => {
     const result = await $host.get('/user/verify-email', { params: { token } });
     return result.data.message;
+}
+
+export const checkAuth = async () => {
+    const result = await $autHost.get('/user/check-auth',);
+    return result.data;
 }

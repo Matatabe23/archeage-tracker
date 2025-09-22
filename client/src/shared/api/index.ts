@@ -78,7 +78,6 @@ $autHost.interceptors.response.use(
                 // Если не удалось обновить токены — разлогиниваем
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
-                window.location.href = '/login';
                 return Promise.reject(err);
             } finally {
                 isRefreshing = false;

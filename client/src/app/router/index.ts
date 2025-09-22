@@ -2,7 +2,7 @@ import type { RouteRecordRaw } from 'vue-router';
 import { createRouter, createWebHistory } from 'vue-router';
 import { Home, VerifyEmail } from '@/pages';
 
-const routes: RouteRecordRaw[] = [
+export const routes: RouteRecordRaw[] = [
 	{
 		path: '/',
 		component: Home,
@@ -17,7 +17,7 @@ const routes: RouteRecordRaw[] = [
 
 	{
 		path: '/:catchAll(.*)',
-		redirect: '/not-found',
+		redirect: '/',
         meta: { layout: 'page' }
 	}
 ];
