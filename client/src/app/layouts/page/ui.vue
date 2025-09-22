@@ -66,6 +66,21 @@
 		</v-main>
 
 		<AuthRegPanel v-model:isOpen="isAuthReg" />
+
+		<v-fade-transition>
+			<div
+				v-if="isCheckAuth"
+				class="fixed inset-0 bg-[#0b1d13] flex items-center justify-center"
+				style="z-index: 9999"
+			>
+				<v-progress-circular
+					:width="8"
+					indeterminate
+					color="blue"
+					:size="100"
+				></v-progress-circular>
+			</div>
+		</v-fade-transition>
 	</v-app>
 </template>
 
@@ -74,13 +89,14 @@
 	import { useRouter } from 'vue-router';
 	import { useAppStore } from '@/app/app.store';
 	import { AuthRegPanel } from '@/widgets';
-import { checkAuth } from '@/shared';
+	import { checkAuth } from '@/shared';
 
 	const router = useRouter();
 	const appStore = useAppStore();
 
 	const drawer = ref(false);
 	const isAuthReg = ref(false);
+	const isCheckAuth = ref(true);
 
 	const goTo = (path: string) => {
 		router.push(path);
@@ -118,14 +134,16 @@ import { checkAuth } from '@/shared';
 		}
 	];
 
-    onMounted(async () => {
-        try {
-            const res = await checkAuth()
-            appStore.auth = true
-            appStore.userData = res
-        } catch (error) {
-            appStore.auth = false
-            appStore.userData = null
-        }
-    })
+	onMounted(async () => {
+		try {
+			const res = await checkAuth();
+			appStore.auth = true;
+			appStore.userData = res;
+		} catch (error) {
+			appStore.auth = false;
+			appStore.userData = null;
+		} finally {
+			isCheckAuth.value = false;
+		}
+	});
 </script>
