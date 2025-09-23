@@ -1,4 +1,5 @@
-import { Column, Model, Table, DataType } from 'sequelize-typescript';
+import { Column, Model, Table, DataType, HasMany } from 'sequelize-typescript';
+import { Characters } from '../characters/characters.repository';
 
 @Table
 export class Games extends Model {
@@ -52,4 +53,8 @@ export class Games extends Model {
 
 	@Column({ defaultValue: DataType.NOW })
 	updatedAt: Date;
+
+	// Связь один-ко-многим с персонажами
+	@HasMany(() => Characters, { foreignKey: 'gameId', as: 'characters' })
+	characters: Characters[];
 }

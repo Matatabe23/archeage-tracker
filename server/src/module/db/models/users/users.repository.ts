@@ -1,4 +1,5 @@
 import { Column, Model, Table, DataType, HasMany, BelongsToMany, HasOne } from 'sequelize-typescript';
+import { Characters } from '../characters/characters.repository';
 import { RefreshToken } from './refresh-token.repository';
 import { UserRoles } from './user-roles.repository';
 import { Roles } from './roles.repository';
@@ -86,4 +87,8 @@ export class Users extends Model {
 	// Связь многие-ко-многим с ролями
 	@BelongsToMany(() => Roles, () => UserRoles)
 	roles: Roles[];
+
+	// Связь один-ко-многим с персонажами
+	@HasMany(() => Characters, { foreignKey: 'userId', as: 'characters' })
+	characters: Characters[];
 }
