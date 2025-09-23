@@ -2,10 +2,11 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { usersDBList } from './models/users';
+import { gamesDBList } from './models/games';
 
 // Импортируем модели
 
-const dbList = [...usersDBList];
+const dbList = [...usersDBList, ...gamesDBList];
 
 @Module({
 	imports: [
