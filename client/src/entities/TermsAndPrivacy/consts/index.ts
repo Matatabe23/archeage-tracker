@@ -29,6 +29,5 @@ export const documentTabs: ITabConfig[] = [
     // }
 ];
 
-// Экспорт типов
-export { IDocumentData, ITabConfig } from '../model';
+
 
