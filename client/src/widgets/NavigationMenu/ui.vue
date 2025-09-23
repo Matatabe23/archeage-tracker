@@ -54,7 +54,6 @@
 
 <script setup lang="ts">
 	import { NavigationItem } from '@/shared';
-	import { watch } from 'vue';
 	import { NavigationMenu } from '.';
 
 	interface Props {
@@ -67,14 +66,6 @@
 	});
 
 	const items = defineModel<NavigationItem[]>('items');
-
-	watch(
-		() => items.value,
-		(value) => {
-			console.log(value);
-		},
-		{ deep: true, immediate: true }
-	);
 
 	const getItemClass = () => {
 		const baseClass = 'flex gap-2';

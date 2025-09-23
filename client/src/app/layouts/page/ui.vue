@@ -123,12 +123,18 @@
 							icon: 'mdi-shield-account',
 							open: false,
 							visible: true,
-
 							children: [
 								{
 									title: 'Настройки системы',
 									icon: 'mdi-cog-outline',
-									open: false
+									open: false,
+									children: [
+										{
+											title: 'Настройки системы',
+											icon: 'mdi-cog-outline',
+											open: false
+										}
+									]
 								}
 							]
 						}
