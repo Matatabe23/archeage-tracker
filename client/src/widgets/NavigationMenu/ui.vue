@@ -9,14 +9,9 @@
 				v-if="item.visible && (!item.children || item.children.length === 0)"
 				link
 				@click="goTo(item.path)"
-				:class="getItemClass()"
+				:prepend-icon="item.icon"
 			>
 				<v-list-item-content class="flex gap-2">
-					<v-icon
-						v-if="item.icon"
-						:size="getIconSize()"
-						>{{ item.icon }}</v-icon
-					>
 					<v-list-item-title>{{ item.title }}</v-list-item-title>
 				</v-list-item-content>
 			</v-list-item>
@@ -27,17 +22,13 @@
 				:value="item.open"
 				@update:value="item.open = $event"
 				:sub-group="level > 0"
+                :class="`ml-${level * 2}`"
 			>
 				<template v-slot:activator="{ props }">
 					<v-list-item
 						v-bind="props"
-						:class="getItemClass()"
+						:prepend-icon="item.icon"
 					>
-						<v-icon
-							v-if="item.icon"
-							:size="getIconSize()"
-							>{{ item.icon }}</v-icon
-						>
 						<v-list-item-title>{{ item.title }}</v-list-item-title>
 					</v-list-item>
 				</template>
@@ -61,20 +52,9 @@
 		goTo: (path: string | undefined) => void;
 	}
 
-	const props = withDefaults(defineProps<Props>(), {
+	withDefaults(defineProps<Props>(), {
 		level: 0
 	});
 
 	const items = defineModel<NavigationItem[]>('items');
-
-	const getItemClass = () => {
-		const baseClass = 'flex gap-2';
-		if (props.level === 0) return baseClass;
-		if (props.level === 1) return `${baseClass} ml-4`;
-		return `${baseClass} ml-${props.level * 4}`;
-	};
-
-	const getIconSize = () => {
-		return props.level > 0 ? 'small' : 'default';
-	};
 </script>
