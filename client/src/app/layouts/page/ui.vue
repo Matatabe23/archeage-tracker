@@ -6,7 +6,13 @@
 			color="surface"
 		>
 			<v-list-item>
-                <img class="p-2" src="/images/logo.png" alt="">
+				<button @click="router.push('/')">
+					<img
+						class="p-2"
+						src="/images/logo.png"
+						alt=""
+					/>
+				</button>
 			</v-list-item>
 
 			<v-list>
