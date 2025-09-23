@@ -1,4 +1,4 @@
-import { DocumentData } from './types';
+import { DocumentData } from '../model';
 
 // Константы для пользовательского соглашения
 export const termsOfServiceData: DocumentData = {

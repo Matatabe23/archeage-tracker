@@ -1,6 +1,6 @@
 import { privacyPolicyData } from './privacyPolicy';
 import { termsOfServiceData } from './termsOfService';
-import { TabConfig } from './types';
+import { TabConfig } from '../model';
 
 // Экспорт типов и данных
 export { privacyPolicyData } from './privacyPolicy';
@@ -29,4 +29,6 @@ export const documentTabs: TabConfig[] = [
     // }
 ];
 
+// Экспорт типов
+export { DocumentData, TabConfig } from '../model';
 

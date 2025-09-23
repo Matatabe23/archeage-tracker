@@ -15,11 +15,3 @@ export interface DocumentData {
 		message: string;
 	};
 }
-
-// Интерфейс для конфигурации вкладки
-export interface TabConfig {
-	value: string;
-	label: string;
-	icon: string;
-	data: DocumentData;
-}

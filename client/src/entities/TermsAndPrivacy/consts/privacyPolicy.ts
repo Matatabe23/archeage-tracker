@@ -1,4 +1,4 @@
-import { DocumentData } from './types';
+import { DocumentData } from '../model';
 
 // Константы для политики конфиденциальности
 export const privacyPolicyData: DocumentData = {
