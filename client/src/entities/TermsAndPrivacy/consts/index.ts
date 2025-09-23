@@ -1,13 +1,13 @@
 import { privacyPolicyData } from './privacyPolicy';
 import { termsOfServiceData } from './termsOfService';
-import { TabConfig } from '../model';
+import { ITabConfig } from '../model';
 
 // Экспорт типов и данных
 export { privacyPolicyData } from './privacyPolicy';
 export { termsOfServiceData } from './termsOfService';
 
 // Массив вкладок - здесь можно легко добавлять новые документы
-export const documentTabs: TabConfig[] = [
+export const documentTabs: ITabConfig[] = [
     {
         value: 'privacy',
         label: 'Политика',
@@ -30,5 +30,5 @@ export const documentTabs: TabConfig[] = [
 ];
 
 // Экспорт типов
-export { DocumentData, TabConfig } from '../model';
+export { IDocumentData, ITabConfig } from '../model';
 

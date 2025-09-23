@@ -1,15 +1,15 @@
 // Типы для структуры данных
-export interface DocumentSection {
+export interface IDocumentSection {
 	title: string;
 	content: string;
 	items?: string[];
 	highlight?: string;
 }
 
-export interface DocumentData {
+export interface IDocumentData {
 	title: string;
 	lastUpdated: string;
-	sections: DocumentSection[];
+	sections: IDocumentSection[];
 	alert?: {
 		type: 'info' | 'warning' | 'error' | 'success';
 		message: string;

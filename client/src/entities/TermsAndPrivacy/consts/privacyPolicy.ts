@@ -1,7 +1,7 @@
-import { DocumentData } from '../model';
+import { IDocumentData } from '../model';
 
 // Константы для политики конфиденциальности
-export const privacyPolicyData: DocumentData = {
+export const privacyPolicyData: IDocumentData = {
 	title: 'Политика конфиденциальности',
 	lastUpdated: new Date().toLocaleDateString('ru-RU'),
 	sections: [

@@ -1,7 +1,7 @@
-import { DocumentData } from '../model';
+import { IDocumentData } from '../model';
 
 // Константы для пользовательского соглашения
-export const termsOfServiceData: DocumentData = {
+export const termsOfServiceData: IDocumentData = {
 	title: 'Пользовательское соглашение',
 	lastUpdated: new Date().toLocaleDateString('ru-RU'),
 	sections: [

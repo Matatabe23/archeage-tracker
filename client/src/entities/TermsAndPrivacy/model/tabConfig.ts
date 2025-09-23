@@ -1,9 +1,9 @@
-import { DocumentData } from './types';
+import { IDocumentData } from './types';
 
 // Интерфейс для конфигурации вкладки
-export interface TabConfig {
+export interface ITabConfig {
 	value: string;
 	label: string;
 	icon: string;
-	data: DocumentData;
+	data: IDocumentData;
 }
