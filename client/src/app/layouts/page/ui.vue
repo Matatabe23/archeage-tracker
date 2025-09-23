@@ -5,6 +5,10 @@
 			app
 			color="surface"
 		>
+			<v-list-item>
+                <img class="p-2" src="/images/logo.png" alt="">
+			</v-list-item>
+
 			<v-list>
 				<v-list-item
 					v-for="page in visiblePages"
@@ -114,7 +118,7 @@
 	const visiblePages = computed(() => PAGES.filter((page) => page.visible));
 
 	const exit = async () => {
-        await logout(localStorage.getItem('refreshToken'))
+		await logout(localStorage.getItem('refreshToken'));
 		localStorage.removeItem('user');
 		localStorage.removeItem('accessToken');
 		localStorage.removeItem('refreshToken');
