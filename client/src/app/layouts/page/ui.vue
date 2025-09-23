@@ -107,38 +107,16 @@
 	const PAGES = reactive<NavigationItem[]>([
 		{ title: 'Главная страница', path: '/', icon: 'mdi-home', visible: true },
 		{
-			title: 'Игры',
-			icon: 'mdi-gamepad-variant',
+			title: 'Админ панель',
+			icon: 'mdi-shield-account',
 			visible: true,
 			open: true,
 			children: [
 				{
-					title: 'Управление',
-					icon: 'mdi-cog',
-					open: false, // <-- и здесь
+					title: 'Игры',
+					icon: 'mdi-gamepad-variant',
 					visible: true,
-					children: [
-						{
-							title: 'Админ панель',
-							icon: 'mdi-shield-account',
-							open: false,
-							visible: true,
-							children: [
-								{
-									title: 'Настройки системы',
-									icon: 'mdi-cog-outline',
-									open: false,
-									children: [
-										{
-											title: 'Настройки системы',
-											icon: 'mdi-cog-outline',
-											open: false
-										}
-									]
-								}
-							]
-						}
-					]
+					open: true
 				}
 			]
 		}

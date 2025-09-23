@@ -10,6 +10,7 @@
 				link
 				@click="goTo(item.path)"
 				:prepend-icon="item.icon"
+				:class="`ml-${level * 2}`"
 			>
 				<v-list-item-content class="flex gap-2">
 					<v-list-item-title>{{ item.title }}</v-list-item-title>
@@ -22,7 +23,7 @@
 				:value="item.open"
 				@update:value="item.open = $event"
 				:sub-group="level > 0"
-                :class="`ml-${level * 2}`"
+				:class="`ml-${level * 2}`"
 			>
 				<template v-slot:activator="{ props }">
 					<v-list-item
