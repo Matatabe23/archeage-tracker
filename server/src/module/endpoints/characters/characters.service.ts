@@ -14,11 +14,17 @@ export class CharactersService {
 	) {}
 
 	async create(dto: CreateCharacterDto): Promise<Characters> {
+		if (!dto.userId) {
+			throw new BadRequestException('ID пользователя обязателен');
+		}
+
 		const exists = await this.charactersRepository.findOne({
 			where: { name: dto.name, userId: dto.userId, gameId: dto.gameId }
 		});
 		if (exists)
-			throw new BadRequestException('Персонаж с таким именем уже существует у этого пользователя в этой игре');
+			throw new BadRequestException(
+				'Персонаж с таким именем уже существует у этого пользователя в этой игре'
+			);
 
 		const character = await this.charactersRepository.create({
 			name: dto.name,
@@ -47,7 +53,9 @@ export class CharactersService {
 				}
 			});
 			if (conflict)
-				throw new BadRequestException('Такой персонаж уже существует у этого пользователя в этой игре');
+				throw new BadRequestException(
+					'Такой персонаж уже существует у этого пользователя в этой игре'
+				);
 		}
 
 		Object.assign(character, dto);
@@ -99,5 +107,3 @@ export class CharactersService {
 		return { items, total: count, page, limit };
 	}
 }
-
-

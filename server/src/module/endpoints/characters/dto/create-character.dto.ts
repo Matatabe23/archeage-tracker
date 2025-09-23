@@ -8,10 +8,11 @@ export class CreateCharacterDto {
 	@MaxLength(255)
 	name: string;
 
-	@ApiProperty({ description: 'ID пользователя-владельца', example: 1 })
+	@ApiProperty({ description: 'ID пользователя-владельца (автоматически)', example: 1, required: false })
 	@IsInt()
 	@Min(1)
-	userId: number;
+	@IsOptional()
+	userId?: number;
 
 	@ApiProperty({ description: 'ID игры', example: 2 })
 	@IsInt()
