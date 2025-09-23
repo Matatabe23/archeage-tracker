@@ -1,7 +1,7 @@
 <template>
 	<v-dialog
 		v-model="isOpen"
-		max-width="500"
+		max-width="600"
 	>
 		<v-card>
 			<v-card-title class="text-h5">
@@ -53,6 +53,31 @@
 						variant="outlined"
 						prepend-inner-icon="mdi-lock"
 					/>
+
+					<v-checkbox
+						v-model="form.agree"
+						:rules="[rules.mustAgree]"
+						hide-details="auto"
+					>
+						<template #label>
+							<span>
+								Я принимаю
+								<RouterLink
+									to="/terms-and-privacy"
+                                    target="_blank"
+									class="text-primary"
+									>Политику конфиденциальности</RouterLink
+								>
+								и
+								<RouterLink
+									to="/terms-and-privacy"
+                                    target="_blank"
+									class="text-primary"
+									>Правила</RouterLink
+								>
+							</span>
+						</template>
+					</v-checkbox>
 				</v-form>
 
 				<!-- Форма авторизации -->
@@ -133,14 +158,16 @@
 		login: '',
 		email: '',
 		password: '',
-		confirmPassword: ''
+		confirmPassword: '',
+		agree: false
 	});
 
 	const rules = {
 		required: (v: string) => !!v || 'Поле обязательно',
 		email: (v: string) => /.+@.+\..+/.test(v) || 'Неверный email',
 		min: (v: string) => v.length >= 6 || 'Минимум 6 символов',
-		matchPassword: (v: string) => v === form.password || 'Пароли не совпадают'
+		matchPassword: (v: string) => v === form.password || 'Пароли не совпадают',
+		mustAgree: (v: boolean) => v || 'Необходимо принять правила'
 	};
 
 	const clear = () => {
@@ -211,8 +238,8 @@
 					}
 				});
 
-                appStore.auth = true
-                appStore.userData = result.user
+				appStore.auth = true;
+				appStore.userData = result.user;
 
 				clear();
 				isOpen.value = false;
