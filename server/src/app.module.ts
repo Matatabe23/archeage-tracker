@@ -14,6 +14,7 @@ import { FileModule } from './module/service/files/files.module';
 import { FilesModule } from './module/endpoints/files/files.module';
 import { RolesModule } from './module/endpoints/roles/roles.module';
 import { GamesModule } from './module/endpoints/games/games.module';
+import { CharactersModule } from './module/endpoints/characters/characters.module';
 
 import { WebSocketModule } from './module/websocket/websocket.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -33,6 +34,7 @@ import { TokenModule } from './module/service/token/token.module';
 		UsersModule,
 		RolesModule,
 		GamesModule,
+		CharactersModule,
 		FilesModule,
 
 		S3Module,
