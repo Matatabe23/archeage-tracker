@@ -15,20 +15,10 @@
 				</button>
 			</v-list-item>
 
-			<v-list>
-				<v-list-item
-					v-for="page in visiblePages"
-					:key="page.title"
-					link
-					@click="goTo(page.path)"
-				>
-					<v-list-item-content class="flex gap-2">
-						<v-icon>{{ page.icon }}</v-icon>
-
-						<v-list-item-title>{{ page.title }}</v-list-item-title>
-					</v-list-item-content>
-				</v-list-item>
-			</v-list>
+			<NavigationMenu
+				:items="visiblePages"
+				:go-to="goTo"
+			/>
 		</v-navigation-drawer>
 
 		<v-app-bar
@@ -98,8 +88,16 @@
 	import { ref, computed, reactive, onMounted } from 'vue';
 	import { useRouter } from 'vue-router';
 	import { useAppStore } from '@/app/app.store';
-	import { AuthRegPanel } from '@/widgets';
+	import { AuthRegPanel, NavigationMenu } from '@/widgets';
 	import { checkAuth, logout } from '@/shared';
+
+	interface NavigationItem {
+		title: string;
+		path?: string;
+		icon?: string;
+		visible?: boolean;
+		children?: NavigationItem[];
+	}
 
 	const router = useRouter();
 	const appStore = useAppStore();
@@ -108,15 +106,93 @@
 	const isAuthReg = ref(false);
 	const isCheckAuth = ref(true);
 
-	const goTo = (path: string) => {
-		router.push(path);
+	const goTo = (path: string | undefined) => {
+		if (path) {
+			router.push(path);
+		}
 	};
 
-	const PAGES = reactive([
+	const PAGES = reactive<NavigationItem[]>([
 		{
 			title: 'Главная страница',
 			path: '/',
 			icon: 'mdi-home',
+			visible: true
+		},
+		{
+			title: 'Игры',
+			icon: 'mdi-gamepad-variant',
+			visible: true,
+			children: [
+				{
+					title: 'Все игры',
+					path: '/games',
+					icon: 'mdi-format-list-bulleted'
+				},
+				{
+					title: 'Мои персонажи',
+					path: '/characters',
+					icon: 'mdi-account-group'
+				},
+				{
+					title: 'Управление',
+					icon: 'mdi-cog',
+					children: [
+						{
+							title: 'Добавить игру',
+							path: '/games/create',
+							icon: 'mdi-plus'
+						},
+						{
+							title: 'Создать персонажа',
+							path: '/characters/create',
+							icon: 'mdi-account-plus'
+						},
+						{
+							title: 'Админ панель',
+							icon: 'mdi-shield-account',
+							children: [
+								{
+									title: 'Управление играми',
+									path: '/admin/games',
+									icon: 'mdi-gamepad-variant-outline'
+								},
+								{
+									title: 'Управление персонажами',
+									path: '/admin/characters',
+									icon: 'mdi-account-group-outline'
+								},
+								{
+									title: 'Пользователи',
+									path: '/admin/users',
+									icon: 'mdi-account-multiple'
+								},
+								{
+									title: 'Настройки системы',
+									icon: 'mdi-cog-outline',
+									children: [
+										{
+											title: 'Роли и права',
+											path: '/admin/roles',
+											icon: 'mdi-shield-key'
+										},
+										{
+											title: 'Логи системы',
+											path: '/admin/logs',
+											icon: 'mdi-file-document-outline'
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			title: 'Профиль',
+			path: '/profile',
+			icon: 'mdi-account',
 			visible: true
 		}
 	]);
