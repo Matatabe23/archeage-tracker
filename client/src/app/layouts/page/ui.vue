@@ -16,7 +16,7 @@
 			</v-list-item>
 
 			<NavigationMenu
-				:items="visiblePages"
+				v-model:items="PAGES"
 				:go-to="goTo"
 			/>
 		</v-navigation-drawer>
@@ -85,19 +85,11 @@
 </template>
 
 <script setup lang="ts">
-	import { ref, computed, reactive, onMounted } from 'vue';
+	import { ref, reactive, onMounted } from 'vue';
 	import { useRouter } from 'vue-router';
 	import { useAppStore } from '@/app/app.store';
 	import { AuthRegPanel, NavigationMenu } from '@/widgets';
-	import { checkAuth, logout } from '@/shared';
-
-	interface NavigationItem {
-		title: string;
-		path?: string;
-		icon?: string;
-		visible?: boolean;
-		children?: NavigationItem[];
-	}
+	import { checkAuth, logout, NavigationItem } from '@/shared';
 
 	const router = useRouter();
 	const appStore = useAppStore();
@@ -113,91 +105,38 @@
 	};
 
 	const PAGES = reactive<NavigationItem[]>([
-		{
-			title: 'Главная страница',
-			path: '/',
-			icon: 'mdi-home',
-			visible: true
-		},
+		{ title: 'Главная страница', path: '/', icon: 'mdi-home', visible: true },
 		{
 			title: 'Игры',
 			icon: 'mdi-gamepad-variant',
 			visible: true,
+			open: true,
 			children: [
-				{
-					title: 'Все игры',
-					path: '/games',
-					icon: 'mdi-format-list-bulleted'
-				},
-				{
-					title: 'Мои персонажи',
-					path: '/characters',
-					icon: 'mdi-account-group'
-				},
 				{
 					title: 'Управление',
 					icon: 'mdi-cog',
+					open: false, // <-- и здесь
+					visible: true,
 					children: [
-						{
-							title: 'Добавить игру',
-							path: '/games/create',
-							icon: 'mdi-plus'
-						},
-						{
-							title: 'Создать персонажа',
-							path: '/characters/create',
-							icon: 'mdi-account-plus'
-						},
 						{
 							title: 'Админ панель',
 							icon: 'mdi-shield-account',
+							open: false,
+							visible: true,
+
 							children: [
-								{
-									title: 'Управление играми',
-									path: '/admin/games',
-									icon: 'mdi-gamepad-variant-outline'
-								},
-								{
-									title: 'Управление персонажами',
-									path: '/admin/characters',
-									icon: 'mdi-account-group-outline'
-								},
-								{
-									title: 'Пользователи',
-									path: '/admin/users',
-									icon: 'mdi-account-multiple'
-								},
 								{
 									title: 'Настройки системы',
 									icon: 'mdi-cog-outline',
-									children: [
-										{
-											title: 'Роли и права',
-											path: '/admin/roles',
-											icon: 'mdi-shield-key'
-										},
-										{
-											title: 'Логи системы',
-											path: '/admin/logs',
-											icon: 'mdi-file-document-outline'
-										}
-									]
+									open: false
 								}
 							]
 						}
 					]
 				}
 			]
-		},
-		{
-			title: 'Профиль',
-			path: '/profile',
-			icon: 'mdi-account',
-			visible: true
 		}
 	]);
-
-	const visiblePages = computed(() => PAGES.filter((page) => page.visible));
 
 	const exit = async () => {
 		await logout(localStorage.getItem('refreshToken'));
