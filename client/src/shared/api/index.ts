@@ -89,7 +89,7 @@ $autHost.interceptors.response.use(
 );
 
 export const getMainInfo = async () => {
-    const { data } = await $autHost.get('main-info');
+    const { data } = await $autHost.get('/main-info');
     return data;
 };
 

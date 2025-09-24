@@ -4,5 +4,3 @@ export enum ECharacterPermission {
 	UPDATE_CHARACTER = 'update_character',
 	DELETE_CHARACTER = 'delete_character'
 }
-
-

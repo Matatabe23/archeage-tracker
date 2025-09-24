@@ -4,7 +4,8 @@ export const useAppStore = defineStore('app', {
     state: () => ({
         userData: null,
         auth: false,
-
+        listRoles: [],
+        permissionsRoles: []
     }),
 
 

@@ -1,3 +1,4 @@
+import { useAppStore } from "@/app/app.store";
 
 export const bodyLock = (boolean: boolean) => {
     if (boolean) {
@@ -19,43 +20,43 @@ export const getIpAddress = async (): Promise<string> => {
         'https://api.ip.sb/geoip',
         'https://ipinfo.io/ip'
     ];
-    
+
     for (const apiUrl of apis) {
         try {
             const response = await fetch(apiUrl);
-            
+
             if (!response.ok) {
                 continue; // Пробуем следующий API
             }
-            
+
             const data = await response.json();
-            
+
             // Обработка для ipify.org
             if (apiUrl.includes('ipify.org')) {
                 return data.ip;
             }
-            
+
             // Обработка для ipapi.co/ip/
             if (apiUrl.includes('ipapi.co/ip/')) {
                 return data.trim();
             }
-            
+
             // Обработка для ip.sb
             if (apiUrl.includes('ip.sb')) {
                 return data.ip;
             }
-            
+
             // Обработка для ipinfo.io/ip
             if (apiUrl.includes('ipinfo.io/ip')) {
                 return data.trim();
             }
-            
+
         } catch (error) {
             // Пробуем следующий API
             continue;
         }
     }
-    
+
     // Если все API недоступны, возвращаем значение по умолчанию
     return 'unknown';
 };
@@ -75,34 +76,34 @@ export const getDeviceInfo = async () => {
     try {
         // Получаем IP-адрес
         const ipAddress = await getIpAddress();
-        
+
         // Получаем часовой пояс
         const timezone = getTimezone();
-        
+
         // Получаем User Agent
         const userAgent = navigator.userAgent;
-        
+
         // Определяем тип устройства
         const deviceType = /Mobile|Android|iPhone|iPad/.test(userAgent) ? 'mobile' : 'desktop';
-        
+
         // Получаем разрешение экрана
         const screenResolution = `${screen.width}x${screen.height}`;
-        
+
         // Получаем язык браузера
         const language = navigator.language || navigator.languages?.[0] || 'unknown';
-        
+
         // Получаем информацию о платформе
         const platform = navigator.platform || 'unknown';
-        
+
         // Получаем информацию о браузере
         const browserInfo = getBrowserInfo(userAgent);
-        
+
         // Получаем информацию о операционной системе
         const osInfo = getOSInfo(userAgent);
-        
+
         // Получаем информацию о геолокации (если доступна)
         const locationInfo = await getLocationInfo(ipAddress);
-        
+
         return {
             deviceName: `${osInfo.name} ${osInfo.version}`,
             deviceType,
@@ -163,14 +164,14 @@ const getBrowserInfo = (userAgent: string) => {
         { name: 'Opera', regex: /Opera\/(\d+\.\d+)/ },
         { name: 'Internet Explorer', regex: /MSIE (\d+\.\d+)/ }
     ];
-    
+
     for (const browser of browsers) {
         const match = userAgent.match(browser.regex);
         if (match) {
             return { name: browser.name, version: match[1] };
         }
     }
-    
+
     return { name: 'unknown', version: 'unknown' };
 };
 
@@ -183,38 +184,38 @@ const getOSInfo = (userAgent: string) => {
         { name: 'Android', regex: /Android (\d+\.\d+)/ },
         { name: 'iOS', regex: /OS (\d+[._]\d+)/ }
     ];
-    
+
     for (const os of osList) {
         const match = userAgent.match(os.regex);
         if (match) {
             return { name: os.name, version: match[1].replace(/_/g, '.') };
         }
     }
-    
+
     return { name: 'unknown', version: 'unknown' };
 };
 
 // Функция для получения информации о местоположении по IP
 const getLocationInfo = async (ipAddress: string) => {
     if (ipAddress === 'unknown') return null;
-    
+
     // Список API для получения геолокации (пробуем по очереди)
     const apis = [
         `https://ip-api.com/json/${ipAddress}?fields=status,message,country,countryCode,region,regionName,city,lat,lon,timezone,isp,as,query`,
         `https://ipapi.co/${ipAddress}/json/`,
         `https://ipinfo.io/${ipAddress}/json`
     ];
-    
+
     for (const apiUrl of apis) {
         try {
             const response = await fetch(apiUrl);
-            
+
             if (!response.ok) {
                 continue; // Пробуем следующий API
             }
-            
+
             const data = await response.json();
-            
+
             // Обработка для ip-api.com
             if (apiUrl.includes('ip-api.com')) {
                 if (data.status === 'success') {
@@ -231,7 +232,7 @@ const getLocationInfo = async (ipAddress: string) => {
                     };
                 }
             }
-            
+
             // Обработка для ipapi.co
             if (apiUrl.includes('ipapi.co')) {
                 return {
@@ -246,7 +247,7 @@ const getLocationInfo = async (ipAddress: string) => {
                     asn: data.asn || null
                 };
             }
-            
+
             // Обработка для ipinfo.io
             if (apiUrl.includes('ipinfo.io')) {
                 const [lat, lon] = data.loc ? data.loc.split(',') : [null, null];
@@ -262,13 +263,20 @@ const getLocationInfo = async (ipAddress: string) => {
                     asn: null
                 };
             }
-            
+
         } catch (error) {
             // Пробуем следующий API
             continue;
         }
     }
-    
+
     // Если все API недоступны, возвращаем null
     return null;
+};
+
+export const checkPermissions = (permission: string): boolean => {
+    const rolePermissions =  useAppStore().listRoles.find(
+        (item) => item.name === useAppStore().userData.role
+    );
+    return rolePermissions?.permissions?.includes(permission) ?? false;
 };

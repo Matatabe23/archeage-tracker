@@ -89,7 +89,7 @@
 	import { useRouter } from 'vue-router';
 	import { useAppStore } from '@/app/app.store';
 	import { AuthRegPanel, NavigationMenu } from '@/widgets';
-	import { checkAuth, logout, NavigationItem } from '@/shared';
+	import { checkAuth, getMainInfo, logout, NavigationItem } from '@/shared';
 
 	const router = useRouter();
 	const appStore = useAppStore();
@@ -149,6 +149,14 @@
 			const res = await checkAuth();
 			appStore.auth = true;
 			appStore.userData = res;
+
+            const mainInfo = await getMainInfo()
+
+            appStore.listRoles = mainInfo.listRoles
+            appStore.permissionsRoles = mainInfo.data.PERMISSIONS
+
+            console.log(appStore.permissionsRoles)
+
 		} catch (error) {
 			appStore.auth = false;
 			appStore.userData = null;
