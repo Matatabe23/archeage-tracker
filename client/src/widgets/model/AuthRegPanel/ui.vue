@@ -64,14 +64,14 @@
 								Я принимаю
 								<RouterLink
 									to="/terms-and-privacy"
-                                    target="_blank"
+									target="_blank"
 									class="text-primary"
 									>Политику конфиденциальности</RouterLink
 								>
 								и
 								<RouterLink
 									to="/terms-and-privacy"
-                                    target="_blank"
+									target="_blank"
 									class="text-primary"
 									>Правила</RouterLink
 								>
@@ -240,6 +240,8 @@
 
 				appStore.auth = true;
 				appStore.userData = result.user;
+
+				appStore.getMainInfo();
 
 				clear();
 				isOpen.value = false;

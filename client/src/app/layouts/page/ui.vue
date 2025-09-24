@@ -145,18 +145,17 @@
 	];
 
 	onMounted(async () => {
+		if (!localStorage.getItem('accessToken')) {
+			isCheckAuth.value = false;
+			return;
+		}
+
 		try {
 			const res = await checkAuth();
 			appStore.auth = true;
 			appStore.userData = res;
 
-            const mainInfo = await getMainInfo()
-
-            appStore.listRoles = mainInfo.listRoles
-            appStore.permissionsRoles = mainInfo.data.PERMISSIONS
-
-            console.log(appStore.permissionsRoles)
-
+			appStore.getMainInfo();
 		} catch (error) {
 			appStore.auth = false;
 			appStore.userData = null;
