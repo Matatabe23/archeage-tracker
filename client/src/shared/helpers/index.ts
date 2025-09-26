@@ -1,4 +1,3 @@
-import { useAppStore } from "@/app/app.store";
 
 export const bodyLock = (boolean: boolean) => {
     if (boolean) {
@@ -272,11 +271,4 @@ const getLocationInfo = async (ipAddress: string) => {
 
     // Если все API недоступны, возвращаем null
     return null;
-};
-
-export const checkPermissions = (permission: string): boolean => {
-    const rolePermissions =  useAppStore().listRoles.find(
-        (item) => item.name === useAppStore().userData.role
-    );
-    return rolePermissions?.permissions?.includes(permission) ?? false;
 };

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Roles } from './module/db/models/users/roles.repository';
 import { PERMISSIONS } from './const/permissions';
+import { EUserPermission } from './types/permissions/users';
 
 @Injectable()
 export class AppService {
@@ -19,8 +20,11 @@ export class AppService {
 
 		return {
 			listRoles,
-			data: {
-				PERMISSIONS
+			statics: {
+				permissions: PERMISSIONS
+			},
+			enums: {
+				EUserPermission
 			}
 		};
 	}

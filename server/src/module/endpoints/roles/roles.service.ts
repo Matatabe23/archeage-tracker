@@ -5,6 +5,7 @@ import { Roles } from 'src/module/db/models/users/roles.repository';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { GetRolesDto } from './dto/get-roles.dto';
+import { PERMISSIONS } from 'src/const/permissions';
 
 @Injectable()
 export class RolesService {
@@ -12,6 +13,28 @@ export class RolesService {
 		@InjectModel(Roles)
 		private readonly rolesRepository: typeof Roles
 	) {}
+
+	async onModuleInit() {
+		const count = await this.rolesRepository.count();
+		if (count === 0) {
+			// Собираем все permissions из объекта
+			const allPermissions = Object.values(PERMISSIONS)
+				.flat() // объединяем массивы
+				.map((p) => p.permission) // берём только permission
+				.join(','); // превращаем в строку через запятую
+
+			await this.rolesRepository.create({
+				nameRu: 'Администратор',
+				nameEn: 'Admin',
+				permissions: allPermissions,
+				priority: 999, // максимально высокий приоритет
+				color: '#ff0000',
+				description: 'Роль с максимальными правами'
+			});
+
+			console.log('✅ Роль Админ создана');
+		}
+	}
 
 	async create(dto: CreateRoleDto): Promise<Roles> {
 		const exists = await this.rolesRepository.findOne({

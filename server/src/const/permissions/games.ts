@@ -6,10 +6,6 @@ export const PERMISSIONS_GAMES = [
 		permission: EGamePermission.CREATE_GAME
 	},
 	{
-		name: 'Получить игры',
-		permission: EGamePermission.GET_GAMES
-	},
-	{
 		name: 'Обновить игру',
 		permission: EGamePermission.UPDATE_GAME
 	},
@@ -18,5 +14,3 @@ export const PERMISSIONS_GAMES = [
 		permission: EGamePermission.DELETE_GAME
 	}
 ];
-
-

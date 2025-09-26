@@ -1,4 +1,4 @@
-import { Column, Model, Table, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { Column, Model, Table, ForeignKey, BelongsTo, DataType } from 'sequelize-typescript';
 import { Users } from './users.repository';
 
 @Table
@@ -10,8 +10,11 @@ export class RefreshToken extends Model {
 	@Column
 	userId: number; // ID пользователя (внешний ключ)
 
-	@Column({ unique: true })
-	token: string; // Уникальный refresh токен
+	@Column({
+		type: DataType.TEXT,
+		allowNull: false
+	})
+	token: string;
 
 	@Column({ allowNull: true })
 	deviceName: string; // Название устройства

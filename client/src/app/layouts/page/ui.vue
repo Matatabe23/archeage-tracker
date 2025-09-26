@@ -89,20 +89,18 @@
 	import { useRouter } from 'vue-router';
 	import { useAppStore } from '@/app/app.store';
 	import { AuthRegPanel, NavigationMenu } from '@/widgets';
-	import { checkAuth, getMainInfo, logout, NavigationItem } from '@/shared';
+	import { checkAuth, logout, NavigationItem } from '@/shared';
+	import { storeToRefs } from 'pinia';
 
 	const router = useRouter();
 	const appStore = useAppStore();
 
+	const { checkPermissions } = appStore;
+	const { enums, statics } = storeToRefs(appStore);
+
 	const drawer = ref(false);
 	const isAuthReg = ref(false);
 	const isCheckAuth = ref(true);
-
-	const goTo = (path: string | undefined) => {
-		if (path) {
-			router.push(path);
-		}
-	};
 
 	const PAGES = reactive<NavigationItem[]>([
 		{ title: 'Главная страница', path: '/', icon: 'mdi-home', visible: true },
@@ -112,6 +110,20 @@
 			visible: true,
 			open: true,
 			children: [
+				{
+					title: 'Пользователи',
+					path: '/',
+					icon: 'mdi-account-group',
+					visible: checkPermissions([enums.value?.EUserPermission.UPDATE_USER_ROLES]),
+					open: true
+				},
+				{
+					title: 'Роли',
+					path: '/',
+					icon: 'mdi-account-cog',
+					visible: true,
+					open: true
+				},
 				{
 					title: 'Игры',
 					icon: 'mdi-gamepad-variant',
@@ -129,6 +141,12 @@
 		localStorage.removeItem('refreshToken');
 		appStore.auth = false;
 		await router.push('/');
+	};
+
+	const goTo = (path: string | undefined) => {
+		if (path) {
+			router.push(path);
+		}
 	};
 
 	const MENU_LIST = [
